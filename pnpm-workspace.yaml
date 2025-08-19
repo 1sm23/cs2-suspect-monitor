@@ -1,0 +1,12 @@
+packages:
+  - .
+
+enablePrePostScripts: true
+
+ignoredBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - sharp
+  - unrs-resolver
+
+onlyBuiltDependencies:
+  - better-sqlite3

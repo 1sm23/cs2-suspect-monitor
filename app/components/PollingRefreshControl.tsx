@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useLanguage } from './LanguageProvider';
+import { useTranslations } from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
 
 interface PollingRefreshControlProps {
   onRefresh: () => Promise<void>;
@@ -9,7 +10,7 @@ interface PollingRefreshControlProps {
 }
 
 export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRefreshControlProps) {
-  const { t } = useLanguage();
+  const t = useTranslations();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [countdown, setCountdown] = useState(30);
@@ -72,13 +73,13 @@ export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRe
         </div>
       )}
 
-      <button
+      <Button
         onClick={handleRefresh}
         disabled={isRefreshing}
-        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm"
+        size="sm"
       >
         {isRefreshing ? t('suspects.refreshing') : t('suspects.manual_refresh')}
-      </button>
+      </Button>
     </div>
   );
 }

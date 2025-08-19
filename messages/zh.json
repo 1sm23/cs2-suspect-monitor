@@ -22,6 +22,8 @@
     "last_checked": "最后检查",
     "last_logoff": "最后下线",
     "playing_cs2": "正在游玩 CS2",
+    "playing_cs2_menu": "CS2 已启动",
+    "playing_cs2_in_game": "正在游戏中",
     "playing_cs2_on_server": "正在服务器上游玩 CS2",
     "category_label": "类别",
     "category": {
@@ -36,7 +38,11 @@
     "refresh": "刷新",
     "refreshing": "刷新中...",
     "auto_refresh": "每30秒自动刷新",
-    "manual_refresh": "手动刷新"
+    "manual_refresh": "手动刷新",
+    "filter_options": "筛选选项",
+    "filter_online": "在线",
+    "filter_game_launched": "已启动 CS2",
+    "filter_in_game": "正在游戏中"
   },
   "evidence": {
     "title": "证据",
@@ -57,9 +63,8 @@
   "status": {
     "online": "在线",
     "offline": "离线",
-    "snooze": "打盹",
+    "snooze": "小憩",
     "away": "离开",
-    "busy": "忙碌",
     "private": "私密",
     "banned": "封禁",
     "unknown": "未知"
@@ -77,6 +82,8 @@
     "save": "保存",
     "delete": "删除",
     "confirm": "确认",
-    "edit": "编辑"
+    "edit": "编辑",
+    "delete_confirm_title": "删除嫌疑人",
+    "delete_confirm_description": "确定要删除这个嫌疑人吗？此操作无法撤销。"
   }
 }

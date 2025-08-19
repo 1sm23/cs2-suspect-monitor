@@ -4,64 +4,194 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Suspect } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
-import { useLanguage } from './LanguageProvider';
+import { VACBadge } from './VACBadge';
+import { CS2StatusBadge } from './CS2StatusBadge';
+import { EditSuspectDialog } from './EditSuspectDialog';
+import { useTranslations } from '@/lib/i18n';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Edit, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface SuspectCardProps {
   suspect: Suspect;
   onDelete: (id: number) => void;
+  onUpdate?: (updatedSuspect: Suspect) => void;
 }
 
-export function SuspectCard({ suspect, onDelete }: SuspectCardProps) {
-  const { t } = useLanguage();
+export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
+  const t = useTranslations();
+  const [imageError, setImageError] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handleDelete = () => {
-    if (confirm(t('common.confirm'))) {
-      onDelete(suspect.id);
+    onDelete(suspect.id);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const handleSuspectUpdated = (updatedSuspect: Suspect) => {
+    if (onUpdate) {
+      onUpdate(updatedSuspect);
     }
+  };
+
+  const displayName = () => {
+    const personaName = suspect.personaname || suspect.steam_id;
+    const nickname = suspect.nickname;
+    
+    if (nickname) {
+      return (
+        <div className="flex items-baseline gap-2">
+          <span>{personaName}</span>
+          <span className="text-sm text-gray-500">({nickname})</span>
+        </div>
+      );
+    }
+    
+    return personaName;
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center space-x-4">
-          <Image
-            src={suspect.avatar_url || '/avatar_placeholder.png'}
-            alt={suspect.nickname || suspect.steam_id}
-            width={64}
-            height={64}
-            className="rounded-full"
-          />
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {suspect.nickname || t('suspects.nickname')}
-            </h3>
-            <p className="text-sm text-gray-600">{suspect.steam_id}</p>
-            <div className="flex items-center space-x-2 mt-2">
-              <StatusBadge status={suspect.status} />
-              {suspect.last_checked && (
-                <span className="text-xs text-gray-500">
-                  {new Date(suspect.last_checked).toLocaleString()}
-                </span>
-              )}
-            </div>
+      <div className="flex items-start space-x-4">
+        <Image
+          src={imageError || !suspect.avatar_url ? '/avatar_placeholder.svg' : suspect.avatar_url}
+          alt={suspect.personaname || suspect.steam_id}
+          width={64}
+          height={64}
+          className="rounded-full flex-shrink-0"
+          onError={handleImageError}
+          unoptimized={imageError || !suspect.avatar_url}
+        />
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-semibold text-gray-900 truncate">
+            {displayName()}
+          </h3>
+          <p className="text-sm text-gray-600 mb-2">{suspect.steam_id}</p>
+          
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <StatusBadge status={suspect.status} />
+            <VACBadge 
+              vacBanned={suspect.vac_banned || false} 
+              gameBanCount={suspect.game_ban_count || 0} 
+            />
+            <CS2StatusBadge 
+              currentGameId={suspect.current_gameid} 
+              gameServerIp={suspect.game_server_ip}
+            />
+            <Badge 
+              variant={suspect.category === 'confirmed' ? 'destructive' : 'secondary'}
+              className={
+                suspect.category === 'confirmed' ? '' : 
+                suspect.category === 'high_risk' ? 'bg-orange-500 text-white hover:bg-orange-600' : 
+                'bg-yellow-500 text-white hover:bg-yellow-600'
+              }
+            >
+              {t(`suspects.category.${suspect.category}` as any)}
+            </Badge>
+          </div>
+
+          {/* <div className="mb-3">
+            <div className="text-sm text-gray-600">{t('suspects.category_label')}:</div>
+            <Badge 
+              variant={suspect.category === 'confirmed' ? 'destructive' : 'secondary'}
+              className={
+                suspect.category === 'confirmed' ? '' : 
+                suspect.category === 'high_risk' ? 'bg-orange-500 text-white hover:bg-orange-600' : 
+                'bg-yellow-500 text-white hover:bg-yellow-600'
+              }
+            >
+              {t(`suspects.category.${suspect.category}` as any)}
+            </Badge>
+          </div> */}
+          
+          <div className="text-xs text-gray-500 space-y-1 mb-3">
+            {/* {suspect.last_checked && (
+              <div>
+                {t('suspects.last_checked')}: {new Date(suspect.last_checked + 'Z').toLocaleString('zh-CN', {
+                  timeZone: 'Asia/Shanghai',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            )} */}
+            {suspect.last_logoff && (
+              <div>
+                {t('suspects.last_logoff')}: {new Date(suspect.last_logoff * 1000).toLocaleString('zh-CN', {
+                  timeZone: 'Asia/Shanghai',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <Button
+              onClick={() => setEditDialogOpen(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              {t('common.edit')}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {t('suspects.delete')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('common.delete_confirm_title')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('common.delete_confirm_description')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>
+                    {t('common.delete')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
-        
-        <div className="flex space-x-2">
-          <Link
-            href={`/suspects/${suspect.id}`}
-            className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-          >
-            {t('suspects.view_details')}
-          </Link>
-          <button
-            onClick={handleDelete}
-            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-          >
-            {t('suspects.delete')}
-          </button>
-        </div>
       </div>
+
+      <EditSuspectDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        suspect={suspect}
+        onSuspectUpdated={handleSuspectUpdated}
+      />
     </div>
   );
 }
