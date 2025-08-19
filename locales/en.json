@@ -1,0 +1,64 @@
+{
+  "navigation": {
+    "suspects": "Suspects",
+    "add_suspect": "Add Suspect",
+    "import": "Import",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "password": "Password",
+    "login_button": "Sign In",
+    "invalid_password": "Invalid password"
+  },
+  "suspects": {
+    "title": "CS2 Suspect Monitor",
+    "list_title": "Suspects List",
+    "add_title": "Add New Suspect",
+    "import_title": "Import Suspects",
+    "steam_id": "Steam ID",
+    "nickname": "Nickname",
+    "status": "Status",
+    "last_checked": "Last Checked",
+    "actions": "Actions",
+    "add_button": "Add Suspect",
+    "view_details": "View Details",
+    "delete": "Delete",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "auto_refresh": "Auto refresh every 30s",
+    "manual_refresh": "Manual refresh"
+  },
+  "evidence": {
+    "title": "Evidence",
+    "add_evidence": "Add Evidence",
+    "type": "Type",
+    "evidence_title": "Title",
+    "content": "Content",
+    "file": "File",
+    "submit": "Add Evidence",
+    "types": {
+      "text": "Text",
+      "link": "Link", 
+      "video": "Video",
+      "image": "Image",
+      "file": "File"
+    }
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "private": "Private",
+    "banned": "Banned",
+    "unknown": "Unknown"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm"
+  }
+}
