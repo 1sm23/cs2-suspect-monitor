@@ -1,0 +1,42 @@
+{
+  "title": "CS2作弊嫌疑人监控系统",
+  "navigation": {
+    "dashboard": "仪表板",
+    "suspects": "嫌疑人",
+    "add_suspect": "添加嫌疑人",
+    "import": "导入",
+    "logout": "登出"
+  },
+  "status": {
+    "monitoring": "监控中",
+    "banned": "已封禁",
+    "cleared": "已清除"
+  },
+  "actions": {
+    "add": "添加",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "cancel": "取消",
+    "upload": "上传",
+    "refresh": "刷新",
+    "login": "登录"
+  },
+  "forms": {
+    "steam_url": "Steam资料链接",
+    "steam_url_placeholder": "输入Steam资料链接或Steam ID",
+    "notes": "备注",
+    "password": "密码",
+    "evidence_title": "证据标题",
+    "evidence_description": "描述",
+    "evidence_type": "证据类型"
+  },
+  "messages": {
+    "loading": "加载中...",
+    "no_suspects": "未找到嫌疑人",
+    "login_required": "请登录以继续",
+    "invalid_credentials": "凭证无效",
+    "success": "成功",
+    "error": "错误"
+  }
+}

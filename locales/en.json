@@ -1,0 +1,42 @@
+{
+  "title": "CS2 Suspect Monitor",
+  "navigation": {
+    "dashboard": "Dashboard",
+    "suspects": "Suspects",
+    "add_suspect": "Add Suspect",
+    "import": "Import",
+    "logout": "Logout"
+  },
+  "status": {
+    "monitoring": "Monitoring",
+    "banned": "Banned",
+    "cleared": "Cleared"
+  },
+  "actions": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "upload": "Upload",
+    "refresh": "Refresh",
+    "login": "Login"
+  },
+  "forms": {
+    "steam_url": "Steam Profile URL",
+    "steam_url_placeholder": "Enter Steam profile URL or Steam ID",
+    "notes": "Notes",
+    "password": "Password",
+    "evidence_title": "Evidence Title",
+    "evidence_description": "Description",
+    "evidence_type": "Evidence Type"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "no_suspects": "No suspects found",
+    "login_required": "Please login to continue",
+    "invalid_credentials": "Invalid credentials",
+    "success": "Success",
+    "error": "Error"
+  }
+}
