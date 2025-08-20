@@ -57,7 +57,7 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
       return (
         <div className="flex items-baseline gap-2">
           <span>{personaName}</span>
-          <span className="text-sm text-gray-500">({nickname})</span>
+          <span className="text-sm text-muted-foreground">({nickname})</span>
         </div>
       );
     }
@@ -66,7 +66,7 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+    <div className="bg-card rounded-lg shadow-md p-6 border border-border">
       <div className="flex items-start space-x-4">
         <Image
           src={imageError || !suspect.avatar_url ? '/avatar_placeholder.svg' : suspect.avatar_url}
@@ -78,10 +78,10 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
           unoptimized={imageError || !suspect.avatar_url}
         />
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 truncate">
+          <h3 className="text-lg font-semibold text-foreground truncate">
             {displayName()}
           </h3>
-          <p className="text-sm text-gray-600 mb-2">{suspect.steam_id}</p>
+          <p className="text-sm text-muted-foreground mb-2">{suspect.steam_id}</p>
           
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <StatusBadge status={suspect.status} />
@@ -119,7 +119,7 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
             </Badge>
           </div> */}
           
-          <div className="text-xs text-gray-500 space-y-1 mb-3">
+          <div className="text-xs text-muted-foreground space-y-1 mb-3">
             {/* {suspect.last_checked && (
               <div>
                 {t('suspects.last_checked')}: {new Date(suspect.last_checked + 'Z').toLocaleString('zh-CN', {

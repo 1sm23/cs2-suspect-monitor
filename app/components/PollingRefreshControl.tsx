@@ -38,7 +38,7 @@ export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRe
       if (intervalId) clearInterval(intervalId);
       if (countdownId) clearInterval(countdownId);
     };
-  }, [autoRefresh, interval]);
+  }, [autoRefresh, interval, onRefresh]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -53,22 +53,22 @@ export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRe
   };
 
   return (
-    <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg border">
+    <div className="flex items-center space-x-4 bg-muted/50 p-4 rounded-lg border border-border">
       <div className="flex items-center space-x-2">
         <input
           type="checkbox"
           id="autoRefresh"
           checked={autoRefresh}
           onChange={(e) => setAutoRefresh(e.target.checked)}
-          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+          className="h-4 w-4 text-primary border-border rounded accent-primary"
         />
-        <label htmlFor="autoRefresh" className="text-sm text-gray-700">
+        <label htmlFor="autoRefresh" className="text-sm text-foreground">
           {t('suspects.auto_refresh')}
         </label>
       </div>
 
       {autoRefresh && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           Next refresh in {countdown}s
         </div>
       )}

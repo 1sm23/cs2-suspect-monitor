@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSteamPlayerSummaries, getSteamPlayerBans, extractSteamIdFromUrl, mapPlayerStateToStatus, steamIdToProfileUrl } from '@/lib/steam';
 import { Suspect } from '@/lib/types';
+import { steamCache } from '@/lib/steam-cache';
 
 // GET /api/suspects - 获取所有嫌疑人
 export async function GET(request: NextRequest) {
@@ -17,7 +18,9 @@ export async function GET(request: NextRequest) {
     
     // 构建筛选条件
     if (filterOnline) {
-      conditions.push("status = 'online'");
+      // 在线状态包含除了 offline、unknown、private 之外的所有状态
+      // 包括：online, busy, away, snooze, looking to trade, looking to play
+      conditions.push("status NOT IN ('offline', 'unknown', 'private')");
     }
     if (filterCS2Launched) {
       conditions.push("current_gameid = 730");
@@ -46,12 +49,33 @@ export async function GET(request: NextRequest) {
       try {
         // 提取所有Steam ID
         const steamIds = suspects.map(suspect => suspect.steam_id);
+        const steamIdsKey = steamIds.sort().join(','); // 排序确保缓存键一致
         
-        // 并行获取Steam数据和封禁数据
-        const [steamPlayers, steamBans] = await Promise.all([
-          getSteamPlayerSummaries(steamIds),
-          getSteamPlayerBans(steamIds)
-        ]);
+        // 检查缓存
+        const summariesCacheKey = `summaries_${steamIdsKey}`;
+        const bansCacheKey = `bans_${steamIdsKey}`;
+        
+        let steamPlayers = steamCache.get(summariesCacheKey);
+        let steamBans = steamCache.get(bansCacheKey);
+        
+        // 如果缓存中没有数据，才调用 Steam API
+        if (!steamPlayers || !steamBans) {
+          console.log('🔄 Cache miss - calling Steam API for', steamIds.length, 'suspects');
+          
+          // 并行获取Steam数据和封禁数据
+          [steamPlayers, steamBans] = await Promise.all([
+            getSteamPlayerSummaries(steamIds),
+            getSteamPlayerBans(steamIds)
+          ]);
+          
+          // 缓存结果（5分钟）
+          steamCache.set(summariesCacheKey, steamPlayers, 300);
+          steamCache.set(bansCacheKey, steamBans, 300);
+          
+          console.log('💾 Cached Steam API results for', steamIds.length, 'suspects');
+        } else {
+          console.log('✅ Cache hit - using cached Steam data for', steamIds.length, 'suspects');
+        }
         
         if (steamPlayers.length > 0 || steamBans.length > 0) {
           console.log(`✅ Fetched Steam data for ${steamPlayers.length}/${steamIds.length} players`);
@@ -68,8 +92,8 @@ export async function GET(request: NextRequest) {
           // 批量更新
           const updateTransaction = db.transaction(() => {
             for (const steamId of steamIds) {
-              const steamPlayer = steamPlayers.find(p => p.steamid === steamId);
-              const steamBan = steamBans.find(b => b.SteamId === steamId);
+              const steamPlayer = steamPlayers.find((p: any) => p.steamid === steamId);
+              const steamBan = steamBans.find((b: any) => b.SteamId === steamId);
               
               const newStatus = steamPlayer ? mapPlayerStateToStatus(
                 steamPlayer.personastate, 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { NavigationBar } from '@/app/components/NavigationBar';
 import { SuspectCard } from '@/app/components/SuspectCard';
 import { PollingRefreshControl } from '@/app/components/PollingRefreshControl';
@@ -73,9 +73,17 @@ export default function SuspectsPage() {
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     try {
-      const response = await fetch('/api/suspects');
+      // 构建筛选参数，和 fetchSuspects 保持一致
+      const params = new URLSearchParams();
+      if (filterOnline) params.append('online', 'true');
+      if (filterGameLaunched) params.append('cs2_launched', 'true'); 
+      if (filterInGame) params.append('in_game', 'true');
+
+      const url = `/api/suspects${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url);
+      
       if (response.ok) {
         const data = await response.json();
         setSuspects(data);
@@ -87,10 +95,10 @@ export default function SuspectsPage() {
       console.error('Failed to fetch suspects:', error);
       setError(t('common.error'));
     }
-  };
+  }, [filterOnline, filterGameLaunched, filterInGame, t]);
 
   const handleSuspectAdded = () => {
-    fetchSuspects(); // 重新获取嫌疑人列表
+    fetchSuspects(); // 使用 fetchSuspects 保持筛选条件一致
   };
 
   const handleSuspectUpdated = (updatedSuspect: Suspect) => {
@@ -99,11 +107,11 @@ export default function SuspectsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <NavigationBar />
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="text-lg">{t('common.loading')}</div>
+            <div className="text-lg text-foreground">{t('common.loading')}</div>
           </div>
         </div>
       </div>
@@ -111,11 +119,11 @@ export default function SuspectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <NavigationBar />
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             {t('suspects.list_title')}
           </h1>
         </div>
@@ -125,8 +133,8 @@ export default function SuspectsPage() {
         </div>
 
         {/* 筛选控制 */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">{t('suspects.filter_options')}</h3>
+        <div className="mb-6 bg-card rounded-lg shadow-sm p-4 border border-border">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('suspects.filter_options')}</h3>
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center space-x-2">
               <Switch
@@ -162,14 +170,14 @@ export default function SuspectsPage() {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-800">{error}</div>
+          <div className="mb-6 rounded-md bg-destructive/10 p-4 border border-destructive/20">
+            <div className="text-sm text-destructive">{error}</div>
           </div>
         )}
 
         {suspects.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-gray-500">
+            <div className="text-muted-foreground">
               No suspects found. Add some suspects to start monitoring.
             </div>
           </div>
