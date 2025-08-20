@@ -2,7 +2,7 @@
 
 CS2作弊嫌疑人监控系统 - 基于Next.js的Steam API监控工具
 
-![CS2 Suspect Monitor](https://p.ipic.vip/62i07q.bmp)
+![CS2 Suspect Monitor](/public/screenshot.bmp)
 
 ## 🎯 项目简介
 

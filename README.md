@@ -4,7 +4,7 @@ CS2 Cheating Suspect Monitoring System - Steam API Monitoring Tool Based on Next
 
 [中文文档](./README.zh-CN.md) | English
 
-![CS2 Suspect Monitor](https://p.ipic.vip/62i07q.bmp)
+![CS2 Suspect Monitor](/public/screenshot.bmp)
 
 ## 🎯 Project Overview
 
