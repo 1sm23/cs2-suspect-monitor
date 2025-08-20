@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "sonner";
+import type { Metadata } from 'next';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
-  title: "CS2 Suspect Monitor",
-  description: "CS2作弊嫌疑人监控系统",
+  title: 'CS2 Suspect Monitor',
+  description: 'CS2作弊嫌疑人监控系统',
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans">
+      <body className="font-sf-pro">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

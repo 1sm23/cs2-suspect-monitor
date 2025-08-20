@@ -5,16 +5,16 @@ export async function GET(request: NextRequest) {
   try {
     const isAuthenticated = await isAuthenticatedFromRequest(request);
     const cookies = request.cookies.getAll();
-    
+
     return NextResponse.json({
       isAuthenticated,
-      cookies: cookies.map(cookie => ({
+      cookies: cookies.map((cookie) => ({
         name: cookie.name,
-        value: cookie.value ? 'present' : 'empty'
+        value: cookie.value ? 'present' : 'empty',
       })),
       headers: Object.fromEntries(request.headers.entries()),
       url: request.url,
-      method: request.method
+      method: request.method,
     });
   } catch (error) {
     console.error('Debug API error:', error);

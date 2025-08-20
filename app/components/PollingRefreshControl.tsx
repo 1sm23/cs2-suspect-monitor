@@ -11,7 +11,10 @@ interface PollingRefreshControlProps {
   interval?: number;
 }
 
-export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRefreshControlProps) {
+export function PollingRefreshControl({
+  onRefresh,
+  interval = 30000,
+}: PollingRefreshControlProps) {
   const t = useTranslations();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -27,7 +30,7 @@ export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRe
       }, interval);
 
       countdownId = setInterval(() => {
-        setCountdown(prev => {
+        setCountdown((prev) => {
           if (prev <= 1) {
             return 30;
           }
@@ -73,11 +76,7 @@ export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRe
         </div>
       )}
 
-      <Button
-        onClick={handleRefresh}
-        disabled={isRefreshing}
-        size="sm"
-      >
+      <Button onClick={handleRefresh} disabled={isRefreshing} size="sm">
         {isRefreshing ? t('suspects.refreshing') : t('suspects.manual_refresh')}
       </Button>
     </div>

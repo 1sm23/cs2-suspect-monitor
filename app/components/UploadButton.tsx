@@ -10,7 +10,11 @@ interface UploadButtonProps {
   children: React.ReactNode;
 }
 
-export function UploadButton({ onUpload, accept, children }: UploadButtonProps) {
+export function UploadButton({
+  onUpload,
+  accept,
+  children,
+}: UploadButtonProps) {
   const t = useTranslations();
   const [isUploading, setIsUploading] = useState(false);
 

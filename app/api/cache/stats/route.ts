@@ -7,7 +7,7 @@ export async function GET() {
     const stats = steamCache.getStats();
     return NextResponse.json({
       ...stats,
-      message: '缓存统计信息'
+      message: '缓存统计信息',
     });
   } catch (error) {
     console.error('Failed to get cache stats:', error);
@@ -23,7 +23,7 @@ export async function DELETE() {
   try {
     steamCache.clear();
     return NextResponse.json({
-      message: 'Cache cleared successfully'
+      message: 'Cache cleared successfully',
     });
   } catch (error) {
     console.error('Failed to clear cache:', error);

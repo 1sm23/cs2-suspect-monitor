@@ -11,23 +11,25 @@ interface VACBadgeProps {
 export function VACBadge({ vacBanned, gameBanCount }: VACBadgeProps) {
   const t = useTranslations();
   if (vacBanned) {
-    return (
-      <Badge variant="destructive">
-        🔒 {t('ban_status.vac')}
-      </Badge>
-    );
+    return <Badge variant="destructive">🔒 {t('ban_status.vac')}</Badge>;
   }
-  
+
   if (gameBanCount > 0) {
     return (
-      <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200">
+      <Badge
+        variant="secondary"
+        className="bg-orange-100 text-orange-800 hover:bg-orange-200"
+      >
         ⚠️ {t('ban_status.game')} ({gameBanCount})
       </Badge>
     );
   }
-  
+
   return (
-    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
+    <Badge
+      variant="secondary"
+      className="bg-green-100 text-green-800 hover:bg-green-200"
+    >
       ✅ {t('ban_status.none')}
     </Badge>
   );

@@ -42,6 +42,7 @@
     "filter_game_launched": "CS2 Launched Only",
     "filter_in_game": "In Game Only",
     "category_label": "Category",
+    "steam_id_helper": "Please enter a 17-digit Steam ID or Steam profile URL.",
     "category": {
       "confirmed": "Confirmed",
       "high_risk": "High Risk",
@@ -70,7 +71,7 @@
     "submit": "Add Evidence",
     "types": {
       "text": "Text",
-      "link": "Link", 
+      "link": "Link",
       "video": "Video",
       "image": "Image",
       "file": "File"
@@ -102,7 +103,8 @@
     "confirm": "Confirm",
     "edit": "Edit",
     "delete_confirm_title": "Delete Suspect",
-    "delete_confirm_description": "Are you sure you want to delete this suspect? This action cannot be undone."
+    "delete_confirm_description": "Are you sure you want to delete this suspect? This action cannot be undone.",
+    "or": "or"
   },
   "theme": {
     "toggle": "Toggle theme",

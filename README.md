@@ -8,7 +8,7 @@ CS2 Cheating Suspect Monitoring System - Steam API Monitoring Tool Based on Next
 
 ## 🎯 Project Overview
 
-CS2 Suspect Monitor is a cheating suspect monitoring system designed specifically for Counter-Strike 2 players who are serious about climbing the competitive ladder. 
+CS2 Suspect Monitor is a cheating suspect monitoring system designed specifically for Counter-Strike 2 players who are serious about climbing the competitive ladder.
 
 **The Story Behind This Project:**
 As a dedicated CS2 player aiming for Premier rank, I faced a frustrating reality - at high skill levels (around 30,000 Premier rating), losing a single match could cost 400-500 rating points. Encountering cheaters at this stage was absolutely devastating to ranking progress. This tool was born from the need to strategically avoid queuing when known cheaters are online, and to time my matches when suspicious players have already entered games, maximizing the chances of fair competition.
@@ -19,12 +19,14 @@ By integrating Steam API, this system tracks suspicious players' online status, 
 ## ✨ Key Features
 
 ### 🔍 Suspect Management
+
 - **Add Suspects**: Support Steam ID or Steam profile URL
 - **Smart Categories**: Confirmed, High Risk, Suspicious three levels
 - **Real-time Monitoring**: Automatically fetch Steam user status and ban information
 - **Batch Updates**: Periodically refresh all suspects' status
 
 ### 📊 Status Monitoring
+
 - **Online Status**: Real-time display of user online/offline status
 - **Game Status**:
   - CS2 Launched (orange indicator)
@@ -33,16 +35,19 @@ By integrating Steam API, this system tracks suspicious players' online status, 
 - **Last Activity**: Display last offline time
 
 ### 🎛️ Filtering Features
+
 - **Online Only**: Quickly view currently online suspects
 - **CS2 Launched Only**: Filter users running CS2
 - **In Game Only**: View users actually playing on servers
 
 ### 🛠️ Management Features
+
 - **Edit Information**: Modify nickname and category
 - **Delete Confirmation**: Safe deletion of suspect records
 - **Data Persistence**: Local SQLite database storage
 
 ### 🌍 Internationalization
+
 - 🇨🇳 Simplified Chinese
 - 🇺🇸 English
 - Dynamic language switching
@@ -59,18 +64,21 @@ By integrating Steam API, this system tracks suspicious players' online status, 
 ## 📦 Installation and Deployment
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - Steam API Key ([Get here](https://steamcommunity.com/dev/apikey))
 
 ### Installation Steps
 
 1. **Clone Repository**
+
 ```bash
 git clone https://github.com/1sm23/cs2-suspect-monitor.git
 cd cs2-suspect-monitor
 ```
 
 2. **Install Dependencies**
+
 ```bash
 pnpm install
 # or
@@ -78,17 +86,20 @@ npm install
 ```
 
 3. **Configure Environment Variables**
+
 ```bash
 cp .env.example .env.local
 ```
 
 Edit `.env.local` file:
+
 ```env
 STEAM_API_KEY=your_steam_api_key_here
 AUTH_PASSWORD=your_login_password
 ```
 
 4. **Start Development Server**
+
 ```bash
 pnpm dev
 # or
@@ -96,7 +107,7 @@ npm run dev
 ```
 
 5. **Access Application**
-Open [http://localhost:3000](http://localhost:3000)
+   Open [http://localhost:3000](http://localhost:3000)
 
 ## 📁 Project Structure
 
@@ -121,11 +132,13 @@ cs2-suspect-monitor/
 ## 🔧 Core Implementation
 
 ### Steam API Integration
+
 - **User Information**: `ISteamUser/GetPlayerSummaries/v2`
 - **Ban Status**: `ISteamUser/GetPlayerBans/v1`
 - **Real-time Status**: Online status, game status, server IP
 
 ### Database Design
+
 ```sql
 CREATE TABLE suspects (
   id INTEGER PRIMARY KEY,
@@ -143,7 +156,9 @@ CREATE TABLE suspects (
 ```
 
 ### Filtering System
+
 Backend API supports dynamic filtering:
+
 - `GET /api/suspects?online=true` - Online users only
 - `GET /api/suspects?cs2_launched=true` - CS2 launched only
 - `GET /api/suspects?in_game=true` - In game only
@@ -151,6 +166,7 @@ Backend API supports dynamic filtering:
 ## 📋 TODO List
 
 ### 🔥 High Priority
+
 - [ ] **Evidence Upload System**
   - [ ] Screenshot upload and preview
   - [ ] Video evidence support
@@ -164,6 +180,7 @@ Backend API supports dynamic filtering:
   - [ ] Advanced search combinations
 
 ### 🎯 Medium Priority
+
 - [ ] **Enhanced Monitoring**
   - [ ] Status change history
   - [ ] Ban status change notifications
@@ -183,6 +200,7 @@ Backend API supports dynamic filtering:
   - [ ] Loading state optimization
 
 ### 🔮 Future Plans
+
 - [ ] **Collaboration Features**
   - [ ] Multi-user support
   - [ ] Team shared blacklist

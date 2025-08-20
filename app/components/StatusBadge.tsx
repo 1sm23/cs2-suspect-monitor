@@ -18,7 +18,8 @@ export function StatusBadge({ status }: StatusBadgeProps) {
     unknown: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
   };
 
-  const colorClass = statusColors[status as keyof typeof statusColors] || statusColors.unknown;
+  const colorClass =
+    statusColors[status as keyof typeof statusColors] || statusColors.unknown;
   return (
     <Badge variant="secondary" className={colorClass}>
       {t(`status.${status}` as any)}

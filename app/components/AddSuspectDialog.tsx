@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/app/components/ui/InputWrapper';
+import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/lib/i18n';
 import { authManager } from '@/lib/auth-manager';
 import { toast } from 'sonner';
@@ -13,7 +14,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface AddSuspectDialogProps {
   open: boolean;
@@ -21,10 +29,16 @@ interface AddSuspectDialogProps {
   onSuspectAdded: () => void;
 }
 
-export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSuspectDialogProps) {
+export function AddSuspectDialog({
+  open,
+  onOpenChange,
+  onSuspectAdded,
+}: AddSuspectDialogProps) {
   const [steamInput, setSteamInput] = useState('');
   const [nickname, setNickname] = useState('');
-  const [category, setCategory] = useState<'confirmed' | 'high_risk' | 'suspected'>('confirmed');
+  const [category, setCategory] = useState<
+    'confirmed' | 'high_risk' | 'suspected'
+  >('confirmed');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [inputHelp, setInputHelp] = useState('');
@@ -33,31 +47,33 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
   // 提取Steam ID的函数
   const extractSteamIdFromUrl = (input: string): string | null => {
     const cleanInput = input.trim();
-    
+
     // 如果已经是17位数字的Steam ID，直接返回
     if (/^\d{17}$/.test(cleanInput)) {
       return cleanInput;
     }
-    
+
     // 尝试从Steam profile URL中提取Steam ID
-    const profileMatch = cleanInput.match(/steamcommunity\.com\/profiles\/(\d{17})/);
+    const profileMatch = cleanInput.match(
+      /steamcommunity\.com\/profiles\/(\d{17})/
+    );
     if (profileMatch) {
       return profileMatch[1];
     }
-    
+
     return null;
   };
 
   const handleInputChange = (value: string) => {
     setSteamInput(value);
-    
+
     if (!value.trim()) {
       setInputHelp('');
       return;
     }
-    
+
     const extractedId = extractSteamIdFromUrl(value);
-    
+
     if (extractedId) {
       setInputHelp(`✓ 检测到 Steam ID: ${extractedId}`);
     } else if (value.includes('steamcommunity.com/id/')) {
@@ -86,7 +102,7 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
 
     // 提取Steam ID
     const finalSteamId = extractSteamIdFromUrl(steamInput);
-    
+
     if (!finalSteamId) {
       setError('请输入有效的Steam ID或Steam profile URL');
       setIsLoading(false);
@@ -110,10 +126,10 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
         resetForm();
         onOpenChange(false);
         onSuspectAdded();
-        toast.success(t("suspects.messages.added_success"));
+        toast.success(t('suspects.messages.added_success'));
       } else {
         const data = await response.json();
-        
+
         // 特殊处理重复用户错误
         if (response.status === 409) {
           setError('该Steam用户已在监控列表中，请勿重复添加');
@@ -141,11 +157,11 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{t('suspects.add_title')}</DialogTitle>
-          <DialogDescription>
-            {t('suspects.steam_id')} 或 Steam profile URL
-          </DialogDescription>
+          {/* <DialogDescription>
+            {t("suspects.steam_id")} 或 Steam profile URL
+          </DialogDescription> */}
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label={`${t('suspects.steam_id')} *`}
@@ -153,8 +169,10 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
             id="steamInput"
             value={steamInput}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="76561198358372020 或 https://steamcommunity.com/profiles/76561198358372020/"
-            helperText={inputHelp || "输入17位Steam ID或Steam profile URL"}
+            placeholder={`76561198358372020 ${t(
+              'common.or'
+            )} https://steamcommunity.com/profiles/76561198358372020/`}
+            helperText={inputHelp || t('suspects.steam_id_helper')}
             required
             disabled={isLoading}
           />
@@ -166,49 +184,39 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="Custom nickname"
-            helperText="Leave empty to use Steam profile name"
+            helperText={t('suspects.nickname_placeholder')}
             disabled={isLoading}
           />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               {t('suspects.category_label')}
-            </label>
-            <div className="flex flex-col space-y-2">
-              <label className="flex items-center space-x-2">
-                <input 
-                  type="radio" 
-                  name="category" 
-                  value="confirmed" 
-                  checked={category === 'confirmed'} 
-                  onChange={() => setCategory('confirmed')} 
-                  disabled={isLoading} 
-                />
-                <span className="text-sm">{t('suspects.category.confirmed')}</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input 
-                  type="radio" 
-                  name="category" 
-                  value="high_risk" 
-                  checked={category === 'high_risk'} 
-                  onChange={() => setCategory('high_risk')} 
-                  disabled={isLoading} 
-                />
-                <span className="text-sm">{t('suspects.category.high_risk')}</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input 
-                  type="radio" 
-                  name="category" 
-                  value="suspected" 
-                  checked={category === 'suspected'} 
-                  onChange={() => setCategory('suspected')} 
-                  disabled={isLoading} 
-                />
-                <span className="text-sm">{t('suspects.category.suspected')}</span>
-              </label>
-            </div>
+            </Label>
+            <Select
+              value={category}
+              onValueChange={(value: 'suspected' | 'high_risk' | 'confirmed') =>
+                setCategory(value)
+              }
+              disabled={isLoading}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="suspected">
+                  {t('suspects.category.suspected')}
+                </SelectItem>
+                <SelectItem value="high_risk">
+                  {t('suspects.category.high_risk')}
+                </SelectItem>
+                <SelectItem value="confirmed">
+                  {t('suspects.category.confirmed')}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {error && (
@@ -226,10 +234,7 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
             >
               {t('common.cancel')}
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-            >
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? t('common.loading') : t('suspects.add_button')}
             </Button>
           </DialogFooter>

@@ -1,9 +1,10 @@
 // 统一的数据库接口 - 根据环境自动选择使用 SQLite 或 PostgreSQL
 
 // 检查数据库环境（PostgreSQL 或 SQLite）
-const isPostgreSQL = process.env.DATABASE_URL && 
-                     (process.env.DATABASE_URL.startsWith('postgresql://') || 
-                      process.env.DATABASE_URL.startsWith('postgres://'));
+const isPostgreSQL =
+  process.env.DATABASE_URL &&
+  (process.env.DATABASE_URL.startsWith('postgresql://') ||
+    process.env.DATABASE_URL.startsWith('postgres://'));
 const isSQLite = !isPostgreSQL;
 
 // 调试信息
@@ -42,11 +43,13 @@ export async function initDatabase() {
   return db.initDatabase();
 }
 
-export async function getAllSuspects(filters: {
-  online?: boolean;
-  cs2_launched?: boolean;
-  in_game?: boolean;
-} = {}) {
+export async function getAllSuspects(
+  filters: {
+    online?: boolean;
+    cs2_launched?: boolean;
+    in_game?: boolean;
+  } = {}
+) {
   const db = await ensureDb();
   return db.getAllSuspects(filters);
 }
@@ -71,16 +74,18 @@ export async function getSuspectById(id: number) {
   return db.getSuspectById(id);
 }
 
-export async function updateSuspectsBatch(updates: Array<{
-  steam_id: string;
-  status?: string;
-  current_gameid?: number;
-  game_server_ip?: string;
-  personaname?: string;
-  vac_banned?: boolean;
-  game_ban_count?: number;
-  last_logoff?: string;
-}>) {
+export async function updateSuspectsBatch(
+  updates: Array<{
+    steam_id: string;
+    status?: string;
+    current_gameid?: number;
+    game_server_ip?: string;
+    personaname?: string;
+    vac_banned?: boolean;
+    game_ban_count?: number;
+    last_logoff?: string;
+  }>
+) {
   const db = await ensureDb();
   return db.updateSuspectsBatch(updates);
 }

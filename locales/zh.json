@@ -47,6 +47,7 @@
     "filter_online": "在线",
     "filter_game_launched": "已启动 CS2",
     "filter_in_game": "正在游戏中",
+    "steam_id_helper": "输入17位Steam ID或Steam 主页地址",
     "messages": {
       "added_success": "嫌疑人添加成功",
       "updated_success": "嫌疑人更新成功",
@@ -102,7 +103,8 @@
     "confirm": "确认",
     "edit": "编辑",
     "delete_confirm_title": "删除嫌疑人",
-    "delete_confirm_description": "确定要删除这个嫌疑人吗？此操作无法撤销。"
+    "delete_confirm_description": "确定要删除这个嫌疑人吗？此操作无法撤销。",
+    "or": "或"
   },
   "theme": {
     "toggle": "切换主题",

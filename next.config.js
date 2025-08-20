@@ -2,13 +2,13 @@
 const nextConfig = {
   // 生产环境启用 sourcemap 支持
   productionBrowserSourceMaps: true,
-  
+
   // 开发环境的experimental配置
   experimental: {
     // 启用更好的调试支持
     forceSwcTransforms: false,
   },
-  
+
   images: {
     remotePatterns: [
       {
@@ -34,9 +34,9 @@ const nextConfig = {
         hostname: 'steamcdn-a.akamaihd.net',
         port: '',
         pathname: '/**',
-      }
-    ]
-  }
-}
+      },
+    ],
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

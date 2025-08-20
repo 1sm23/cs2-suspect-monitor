@@ -34,8 +34,8 @@ export function EvidenceItem({ evidence, onDelete }: EvidenceItemProps) {
         if (evidence.file_path) {
           return (
             <div>
-              <img 
-                src={evidence.file_path} 
+              <img
+                src={evidence.file_path}
                 alt={evidence.title}
                 className="max-w-xs max-h-48 object-contain"
               />
@@ -72,7 +72,7 @@ export function EvidenceItem({ evidence, onDelete }: EvidenceItemProps) {
         <div>
           <h4 className="font-semibold text-gray-900">{evidence.title}</h4>
           <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-            {t((`evidence.types.${evidence.type}`) as any)}
+            {t(`evidence.types.${evidence.type}` as any)}
           </span>
         </div>
         <button
@@ -82,11 +82,9 @@ export function EvidenceItem({ evidence, onDelete }: EvidenceItemProps) {
           {t('common.delete')}
         </button>
       </div>
-      
-      <div className="mt-3">
-        {renderContent()}
-      </div>
-      
+
+      <div className="mt-3">{renderContent()}</div>
+
       <div className="text-xs text-gray-500 mt-3">
         {new Date(evidence.created_at).toLocaleString()}
       </div>

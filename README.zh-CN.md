@@ -17,12 +17,14 @@ CS2 Suspect Monitor 是一个专为追求高段位的 Counter-Strike 2 玩家设
 ## ✨ 主要功能
 
 ### 🔍 嫌疑人管理
+
 - **添加嫌疑人**：支持 Steam ID 或 Steam 个人资料 URL
 - **智能分类**：实锤、高风险、嫌疑三个等级
 - **实时监控**：自动获取 Steam 用户状态和封禁信息
 - **批量更新**：定期刷新所有嫌疑人状态
 
 ### 📊 状态监控
+
 - **在线状态**：实时显示用户在线/离线状态
 - **游戏状态**：
   - CS2 已启动 (橙色标记)
@@ -31,16 +33,19 @@ CS2 Suspect Monitor 是一个专为追求高段位的 Counter-Strike 2 玩家设
 - **最后活动**：显示最后下线时间
 
 ### 🎛️ 筛选功能
+
 - **仅在线用户**：快速查看当前在线的嫌疑人
 - **仅已启动 CS2**：筛选正在运行 CS2 的用户
 - **仅正在游戏中**：查看真正在服务器中游戏的用户
 
 ### 🛠️ 管理功能
+
 - **编辑信息**：修改昵称和分类
 - **删除确认**：安全删除嫌疑人记录
 - **数据持久化**：本地 SQLite 数据库存储
 
 ### 🌍 国际化支持
+
 - 🇨🇳 简体中文
 - 🇺🇸 English
 - 动态语言切换
@@ -57,18 +62,21 @@ CS2 Suspect Monitor 是一个专为追求高段位的 Counter-Strike 2 玩家设
 ## 📦 安装和部署
 
 ### 前置要求
-- Node.js 18+ 
+
+- Node.js 18+
 - Steam API Key ([获取地址](https://steamcommunity.com/dev/apikey))
 
 ### 安装步骤
 
 1. **克隆仓库**
+
 ```bash
 git clone https://github.com/1sm23/cs2-suspect-monitor.git
 cd cs2-suspect-monitor
 ```
 
 2. **安装依赖**
+
 ```bash
 pnpm install
 # 或
@@ -76,17 +84,20 @@ npm install
 ```
 
 3. **配置环境变量**
+
 ```bash
 cp .env.example .env.local
 ```
 
 编辑 `.env.local` 文件：
+
 ```env
 STEAM_API_KEY=your_steam_api_key_here
 AUTH_PASSWORD=your_login_password
 ```
 
 4. **启动开发服务器**
+
 ```bash
 pnpm dev
 # 或
@@ -94,7 +105,7 @@ npm run dev
 ```
 
 5. **访问应用**
-打开 [http://localhost:3000](http://localhost:3000)
+   打开 [http://localhost:3000](http://localhost:3000)
 
 ## 📁 项目结构
 
@@ -119,11 +130,13 @@ cs2-suspect-monitor/
 ## 🔧 核心功能实现
 
 ### Steam API 集成
+
 - **用户信息**：`ISteamUser/GetPlayerSummaries/v2`
 - **封禁状态**：`ISteamUser/GetPlayerBans/v1`
 - **实时状态**：在线状态、游戏状态、服务器IP
 
 ### 数据库设计
+
 ```sql
 CREATE TABLE suspects (
   id INTEGER PRIMARY KEY,
@@ -141,7 +154,9 @@ CREATE TABLE suspects (
 ```
 
 ### 筛选系统
+
 后端 API 支持动态筛选：
+
 - `GET /api/suspects?online=true` - 仅在线用户
 - `GET /api/suspects?cs2_launched=true` - 仅已启动 CS2
 - `GET /api/suspects?in_game=true` - 仅正在游戏中
@@ -149,6 +164,7 @@ CREATE TABLE suspects (
 ## 📋 TODO 清单
 
 ### 🔥 高优先级
+
 - [ ] **罪证上传系统**
   - [ ] 截图上传和预览
   - [ ] 视频证据支持
@@ -162,6 +178,7 @@ CREATE TABLE suspects (
   - [ ] 高级搜索组合
 
 ### 🎯 中优先级
+
 - [ ] **增强的监控功能**
   - [ ] 状态变化历史记录
   - [ ] 封禁状态变化通知
@@ -181,6 +198,7 @@ CREATE TABLE suspects (
   - [ ] 加载状态优化
 
 ### 🔮 未来规划
+
 - [ ] **协作功能**
   - [ ] 多用户支持
   - [ ] 团队共享黑名单

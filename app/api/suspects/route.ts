@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  getAllSuspects, 
-  addSuspect, 
+import {
+  getAllSuspects,
+  addSuspect,
   initDatabase,
   updateSuspectsBatch,
   deleteSuspect,
-  updateSuspect
+  updateSuspect,
 } from '@/lib/db';
 import { getSteamPlayerSummaries, getSteamPlayerBans } from '@/lib/steam';
 import { steamCache } from '@/lib/steam-cache';
@@ -21,34 +21,43 @@ export async function GET(request: NextRequest) {
     const filterCS2Launched = url.searchParams.get('cs2_launched') === 'true';
     const filterInGame = url.searchParams.get('in_game') === 'true';
 
-    console.log('🔍 Fetching suspects with filters:', { 
-      online: filterOnline, 
-      cs2_launched: filterCS2Launched, 
-      in_game: filterInGame 
+    console.log('🔍 Fetching suspects with filters:', {
+      online: filterOnline,
+      cs2_launched: filterCS2Launched,
+      in_game: filterInGame,
     });
 
     // 获取嫌疑人列表
     const suspects = await getAllSuspects({
       online: filterOnline,
       cs2_launched: filterCS2Launched,
-      in_game: filterInGame
+      in_game: filterInGame,
     });
 
     // 如果没有筛选条件，更新 Steam 数据
-    if (suspects.length > 0 && !filterOnline && !filterCS2Launched && !filterInGame) {
+    if (
+      suspects.length > 0 &&
+      !filterOnline &&
+      !filterCS2Launched &&
+      !filterInGame
+    ) {
       const steamIdArray = suspects.map((s: Suspect) => s.steam_id);
       const steamIds = steamIdArray.join(',');
       const cacheKey = `steam_data_${steamIds}`;
-      
+
       let steamData = steamCache.get(cacheKey);
       let steamBanData = steamCache.get(`steam_bans_${steamIds}`);
-      
+
       if (!steamData || !steamBanData) {
-        console.log('🔄 Cache miss - calling Steam API for', suspects.length, 'suspects');
-        
+        console.log(
+          '🔄 Cache miss - calling Steam API for',
+          suspects.length,
+          'suspects'
+        );
+
         steamData = await getSteamPlayerSummaries(steamIdArray);
         steamBanData = await getSteamPlayerBans(steamIdArray);
-        
+
         steamCache.set(cacheKey, steamData, 300);
         steamCache.set(`steam_bans_${steamIds}`, steamBanData, 300);
       } else {
@@ -56,21 +65,41 @@ export async function GET(request: NextRequest) {
       }
 
       // 批量更新数据库
-      if (steamData && steamData.length > 0 && steamBanData && steamBanData.length > 0) {
+      if (
+        steamData &&
+        steamData.length > 0 &&
+        steamBanData &&
+        steamBanData.length > 0
+      ) {
         const updates = suspects.map((suspect: Suspect) => {
-          const steamPlayer = steamData.find((p: any) => p.steamid === suspect.steam_id);
-          const steamBan = steamBanData.find((p: any) => p.SteamId === suspect.steam_id);
+          const steamPlayer = steamData.find(
+            (p: any) => p.steamid === suspect.steam_id
+          );
+          const steamBan = steamBanData.find(
+            (p: any) => p.SteamId === suspect.steam_id
+          );
 
           return {
             steam_id: suspect.steam_id,
-            status: steamPlayer?.personastate !== undefined ? getStatusFromPersonaState(steamPlayer.personastate) : 'unknown',
-            current_gameid: steamPlayer?.gameid ? parseInt(steamPlayer.gameid) : undefined,
+            status:
+              steamPlayer?.personastate !== undefined
+                ? getStatusFromPersonaState(steamPlayer.personastate)
+                : 'unknown',
+            current_gameid: steamPlayer?.gameid
+              ? parseInt(steamPlayer.gameid)
+              : undefined,
             game_server_ip: steamPlayer?.gameserverip || undefined,
             personaname: steamPlayer?.personaname || undefined,
-            avatar_url: steamPlayer?.avatarfull || steamPlayer?.avatarmedium || steamPlayer?.avatar || undefined,
+            avatar_url:
+              steamPlayer?.avatarfull ||
+              steamPlayer?.avatarmedium ||
+              steamPlayer?.avatar ||
+              undefined,
             vac_banned: steamBan?.VACBanned || false,
             game_ban_count: steamBan?.NumberOfGameBans || 0,
-            last_logoff: steamPlayer?.lastlogoff ? Number(steamPlayer.lastlogoff) : undefined
+            last_logoff: steamPlayer?.lastlogoff
+              ? Number(steamPlayer.lastlogoff)
+              : undefined,
           };
         });
 
@@ -81,7 +110,7 @@ export async function GET(request: NextRequest) {
       const updatedSuspects = await getAllSuspects({
         online: filterOnline,
         cs2_launched: filterCS2Launched,
-        in_game: filterInGame
+        in_game: filterInGame,
       });
 
       return Response.json(updatedSuspects);
@@ -90,7 +119,10 @@ export async function GET(request: NextRequest) {
     return Response.json(suspects);
   } catch (error) {
     console.error('API Error:', error);
-    return Response.json({ error: 'Failed to fetch suspects' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to fetch suspects' },
+      { status: 500 }
+    );
   }
 }
 
@@ -104,15 +136,12 @@ export async function POST(request: Request) {
 
     // 验证必需的字段
     if (!steam_id) {
-      return Response.json(
-        { error: 'Steam ID is required' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Steam ID is required' }, { status: 400 });
     }
 
     // Steam ID 提取逻辑保持不变...
     let extractedSteamId = steam_id;
-    
+
     if (steam_id && steam_id.includes('steamcommunity.com')) {
       const matches = steam_id.match(/(?:profiles|id)\/([^\/]+)/);
       if (matches) {
@@ -139,26 +168,41 @@ export async function POST(request: Request) {
       category,
       profile_url: steamPlayer?.profileurl || undefined,
       avatar_url: steamPlayer?.avatarfull || undefined,
-      status: steamPlayer ? getStatusFromPersonaState(steamPlayer.personastate) : 'unknown',
+      status: steamPlayer
+        ? getStatusFromPersonaState(steamPlayer.personastate)
+        : 'unknown',
       vac_banned: steamBan?.VACBanned || false,
       game_ban_count: steamBan?.NumberOfGameBans || 0,
-      current_gameid: steamPlayer?.gameid ? parseInt(steamPlayer.gameid) : undefined,
+      current_gameid: steamPlayer?.gameid
+        ? parseInt(steamPlayer.gameid)
+        : undefined,
       game_server_ip: steamPlayer?.gameserverip || undefined,
-      last_logoff: steamPlayer?.lastlogoff ? Number(steamPlayer.lastlogoff) : undefined
+      last_logoff: steamPlayer?.lastlogoff
+        ? Number(steamPlayer.lastlogoff)
+        : undefined,
     });
 
     return Response.json(newSuspect);
   } catch (error: any) {
     console.error('Failed to create suspect:', error);
-    
+
     // 检查是否是重复键错误
-    if (error.code === '23505' && error.constraint === 'suspects_steam_id_key') {
-      return Response.json({ 
-        error: 'This Steam user is already being monitored' 
-      }, { status: 409 });
+    if (
+      error.code === '23505' &&
+      error.constraint === 'suspects_steam_id_key'
+    ) {
+      return Response.json(
+        {
+          error: 'This Steam user is already being monitored',
+        },
+        { status: 409 }
+      );
     }
-    
-    return Response.json({ error: 'Failed to create suspect' }, { status: 500 });
+
+    return Response.json(
+      { error: 'Failed to create suspect' },
+      { status: 500 }
+    );
   }
 }
 
@@ -170,7 +214,7 @@ function getStatusFromPersonaState(personastate: number): string {
     3: 'away',
     4: 'snooze',
     5: 'looking to trade',
-    6: 'looking to play'
+    6: 'looking to play',
   };
   return statusMap[personastate] || 'unknown';
 }
@@ -178,43 +222,49 @@ function getStatusFromPersonaState(personastate: number): string {
 export async function DELETE(request: NextRequest) {
   try {
     await initDatabase();
-    
+
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
-    
+
     if (!id) {
       return Response.json({ error: 'Missing suspect ID' }, { status: 400 });
     }
-    
+
     await deleteSuspect(parseInt(id));
     return Response.json({ success: true });
   } catch (error) {
     console.error('Failed to delete suspect:', error);
-    return Response.json({ error: 'Failed to delete suspect' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to delete suspect' },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
     await initDatabase();
-    
+
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
-    
+
     if (!id) {
       return Response.json({ error: 'Missing suspect ID' }, { status: 400 });
     }
-    
+
     const body = await request.json();
     const updatedSuspect = await updateSuspect(parseInt(id), body);
-    
+
     if (!updatedSuspect) {
       return Response.json({ error: 'Suspect not found' }, { status: 404 });
     }
-    
+
     return Response.json(updatedSuspect);
   } catch (error) {
     console.error('Failed to update suspect:', error);
-    return Response.json({ error: 'Failed to update suspect' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to update suspect' },
+      { status: 500 }
+    );
   }
 }

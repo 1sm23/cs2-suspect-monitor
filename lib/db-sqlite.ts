@@ -19,7 +19,7 @@ db.exec('PRAGMA text_encoding = "UTF-8";');
 // 初始化数据库表
 export function initDatabase() {
   console.log('Initializing SQLite database at:', dbPath);
-  
+
   // 创建 suspects 表
   db.exec(`
     CREATE TABLE IF NOT EXISTS suspects (
@@ -53,11 +53,13 @@ export function initDatabase() {
 }
 
 // 获取所有嫌疑人
-export function getAllSuspects(filters: {
-  online?: boolean;
-  cs2_launched?: boolean;
-  in_game?: boolean;
-} = {}) {
+export function getAllSuspects(
+  filters: {
+    online?: boolean;
+    cs2_launched?: boolean;
+    in_game?: boolean;
+  } = {}
+) {
   try {
     let query = 'SELECT * FROM suspects';
     const conditions = [];
@@ -69,7 +71,9 @@ export function getAllSuspects(filters: {
       conditions.push('current_gameid = 730');
     }
     if (filters.in_game) {
-      conditions.push("current_gameid = 730 AND game_server_ip IS NOT NULL AND game_server_ip != ''");
+      conditions.push(
+        "current_gameid = 730 AND game_server_ip IS NOT NULL AND game_server_ip != ''"
+      );
     }
 
     if (conditions.length > 0) {
@@ -112,7 +116,7 @@ export function addSuspect(suspect: {
         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP
       )
     `);
-    
+
     const result = stmt.run(
       suspect.steam_id,
       suspect.nickname || null,
@@ -128,9 +132,11 @@ export function addSuspect(suspect: {
       suspect.ban_details || null,
       suspect.last_logoff || null
     );
-    
+
     // 返回新插入的记录
-    const newSuspect = db.prepare('SELECT * FROM suspects WHERE id = ?').get(result.lastInsertRowid);
+    const newSuspect = db
+      .prepare('SELECT * FROM suspects WHERE id = ?')
+      .get(result.lastInsertRowid);
     return newSuspect;
   } catch (error) {
     console.error('Add suspect error:', error);
@@ -143,19 +149,21 @@ export function updateSuspect(id: number, updates: any) {
   try {
     const fields = Object.keys(updates);
     const values = Object.values(updates);
-    
-    const setClause = fields.map(field => `${field} = ?`).join(', ');
-    
+
+    const setClause = fields.map((field) => `${field} = ?`).join(', ');
+
     const stmt = db.prepare(`
       UPDATE suspects 
       SET ${setClause}, last_checked = CURRENT_TIMESTAMP 
       WHERE id = ?
     `);
-    
+
     stmt.run(...values, id);
-    
+
     // 返回更新后的记录
-    const updatedSuspect = db.prepare('SELECT * FROM suspects WHERE id = ?').get(id);
+    const updatedSuspect = db
+      .prepare('SELECT * FROM suspects WHERE id = ?')
+      .get(id);
     return updatedSuspect;
   } catch (error) {
     console.error('Update suspect error:', error);
@@ -186,16 +194,18 @@ export function getSuspectById(id: number) {
 }
 
 // 批量更新嫌疑人状态
-export function updateSuspectsBatch(updates: Array<{
-  steam_id: string;
-  status?: string;
-  current_gameid?: number;
-  game_server_ip?: string;
-  personaname?: string;
-  vac_banned?: boolean;
-  game_ban_count?: number;
-  last_logoff?: string;
-}>) {
+export function updateSuspectsBatch(
+  updates: Array<{
+    steam_id: string;
+    status?: string;
+    current_gameid?: number;
+    game_server_ip?: string;
+    personaname?: string;
+    vac_banned?: boolean;
+    game_ban_count?: number;
+    last_logoff?: string;
+  }>
+) {
   try {
     const stmt = db.prepare(`
       UPDATE suspects 

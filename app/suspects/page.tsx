@@ -28,20 +28,20 @@ function SuspectCardSkeleton() {
           <Skeleton className="h-4 w-24" />
         </div>
       </div>
-      
+
       {/* 状态徽章 */}
       <div className="flex flex-wrap gap-2 mb-4">
         <Skeleton className="h-6 w-16 rounded-full" />
         <Skeleton className="h-6 w-20 rounded-full" />
         <Skeleton className="h-6 w-12 rounded-full" />
       </div>
-      
+
       {/* 最后状态和时间 */}
       <div className="space-y-2 mb-4">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-3/4" />
       </div>
-      
+
       {/* 按钮区域 */}
       <div className="flex gap-2">
         <Skeleton className="h-9 flex-1" />
@@ -77,28 +77,28 @@ export default function SuspectsPage() {
       if (isFilter) {
         setFiltering(true);
       }
-      
+
       // 构建筛选参数
       const params = new URLSearchParams();
       if (filterOnline) params.append('online', 'true');
-      if (filterGameLaunched) params.append('cs2_launched', 'true'); 
+      if (filterGameLaunched) params.append('cs2_launched', 'true');
       if (filterInGame) params.append('in_game', 'true');
 
       const url = `/api/suspects${params.toString() ? '?' + params.toString() : ''}`;
-      
+
       // 使用认证的fetch
       const response = await authManager.authenticatedFetch(url);
-      
+
       if (response.ok) {
         const data = await response.json();
         setSuspects(data);
         // 只在非首次加载时显示成功提示
         if (!loading) {
-          toast.success(t("suspects.messages.loaded_success"));
+          toast.success(t('suspects.messages.loaded_success'));
         }
       } else {
         setError(t('common.error'));
-        toast.error(t("suspects.messages.load_failed"));
+        toast.error(t('suspects.messages.load_failed'));
       }
     } catch (error) {
       console.error('Failed to fetch suspects:', error);
@@ -117,23 +117,27 @@ export default function SuspectsPage() {
 
   // 当筛选条件改变时重新获取数据
   useEffect(() => {
-    if (!loading) { // 只有在初始加载完成后才触发过滤
+    if (!loading) {
+      // 只有在初始加载完成后才触发过滤
       fetchSuspects(true);
     }
   }, [filterOnline, filterGameLaunched, filterInGame]);
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await authManager.authenticatedFetch(`/api/suspects?id=${id}`, {
-        method: 'DELETE',
-      });
-      
+      const response = await authManager.authenticatedFetch(
+        `/api/suspects?id=${id}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
       if (response.ok) {
-        setSuspects(suspects.filter(s => s.id !== id));
-        toast.success(t("suspects.messages.deleted_success"));
+        setSuspects(suspects.filter((s) => s.id !== id));
+        toast.success(t('suspects.messages.deleted_success'));
       } else {
         setError(t('common.error'));
-        toast.error(t("suspects.messages.delete_failed"));
+        toast.error(t('suspects.messages.delete_failed'));
       }
     } catch (error) {
       console.error('Failed to delete suspect:', error);
@@ -147,20 +151,20 @@ export default function SuspectsPage() {
       // 构建筛选参数，和 fetchSuspects 保持一致
       const params = new URLSearchParams();
       if (filterOnline) params.append('online', 'true');
-      if (filterGameLaunched) params.append('cs2_launched', 'true'); 
+      if (filterGameLaunched) params.append('cs2_launched', 'true');
       if (filterInGame) params.append('in_game', 'true');
 
       const url = `/api/suspects${params.toString() ? '?' + params.toString() : ''}`;
       const response = await authManager.authenticatedFetch(url);
-      
+
       if (response.ok) {
         const data = await response.json();
         setSuspects(data);
         setError('');
-        toast.success(t("suspects.messages.refreshed_success"));
+        toast.success(t('suspects.messages.refreshed_success'));
       } else {
         setError(t('common.error'));
-        toast.error(t("suspects.messages.refresh_failed"));
+        toast.error(t('suspects.messages.refresh_failed'));
       }
     } catch (error) {
       console.error('Failed to fetch suspects:', error);
@@ -175,7 +179,9 @@ export default function SuspectsPage() {
   };
 
   const handleSuspectUpdated = (updatedSuspect: Suspect) => {
-    setSuspects(suspects.map(s => s.id === updatedSuspect.id ? updatedSuspect : s));
+    setSuspects(
+      suspects.map((s) => (s.id === updatedSuspect.id ? updatedSuspect : s))
+    );
   };
 
   if (loading) {
@@ -240,7 +246,9 @@ export default function SuspectsPage() {
 
         {/* 筛选控制 */}
         <div className="mb-6 bg-card rounded-lg shadow-sm p-4 border border-border">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('suspects.filter_options')}</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">
+            {t('suspects.filter_options')}
+          </h3>
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center space-x-2">
               <Switch
@@ -283,9 +291,11 @@ export default function SuspectsPage() {
 
         {refreshing || filtering ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: Math.max(suspects.length, 3) }).map((_, index) => (
-              <SuspectCardSkeleton key={`loading-skeleton-${index}`} />
-            ))}
+            {Array.from({ length: Math.max(suspects.length, 3) }).map(
+              (_, index) => (
+                <SuspectCardSkeleton key={`loading-skeleton-${index}`} />
+              )
+            )}
           </div>
         ) : suspects.length === 0 ? (
           <div className="text-center py-12">

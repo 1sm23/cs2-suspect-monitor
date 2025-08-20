@@ -4,8 +4,16 @@ import type { Suspect } from './types';
 // 获取数据库连接（延迟检查）
 function getConnection() {
   const DATABASE_URL = process.env.DATABASE_URL;
-  if (!DATABASE_URL || !(DATABASE_URL.startsWith('postgresql://') || DATABASE_URL.startsWith('postgres://'))) {
-    throw new Error('PostgreSQL database requires a valid PostgreSQL connection string');
+  if (
+    !DATABASE_URL ||
+    !(
+      DATABASE_URL.startsWith('postgresql://') ||
+      DATABASE_URL.startsWith('postgres://')
+    )
+  ) {
+    throw new Error(
+      'PostgreSQL database requires a valid PostgreSQL connection string'
+    );
   }
   return neon(DATABASE_URL);
 }
@@ -14,7 +22,7 @@ function getConnection() {
 export async function initDatabase() {
   try {
     const sql = getConnection();
-    
+
     await sql`
       CREATE TABLE IF NOT EXISTS suspects (
         id SERIAL PRIMARY KEY,
@@ -36,12 +44,12 @@ export async function initDatabase() {
         ban_details TEXT DEFAULT NULL
       )
     `;
-    
+
     // 创建索引
     await sql`CREATE INDEX IF NOT EXISTS idx_suspects_steam_id ON suspects(steam_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_suspects_status ON suspects(status)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_suspects_current_gameid ON suspects(current_gameid)`;
-    
+
     console.log('PostgreSQL database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize PostgreSQL database:', error);
@@ -50,14 +58,16 @@ export async function initDatabase() {
 }
 
 // 获取所有嫌疑人
-export async function getAllSuspects(filters: {
-  online?: boolean;
-  cs2_launched?: boolean;
-  in_game?: boolean;
-} = {}) {
+export async function getAllSuspects(
+  filters: {
+    online?: boolean;
+    cs2_launched?: boolean;
+    in_game?: boolean;
+  } = {}
+) {
   try {
     const sql = getConnection();
-    
+
     if (filters.online && filters.cs2_launched && filters.in_game) {
       return await sql`
         SELECT * FROM suspects 
@@ -99,7 +109,7 @@ export async function getAllSuspects(filters: {
 export async function addSuspect(suspectData: Partial<Suspect>) {
   try {
     const sql = getConnection();
-    
+
     const result = await sql`
       INSERT INTO suspects (
         steam_id, nickname, category, profile_url, avatar_url,
@@ -133,7 +143,7 @@ export async function addSuspect(suspectData: Partial<Suspect>) {
 export async function updateSuspect(id: number, updates: Partial<Suspect>) {
   try {
     const sql = getConnection();
-    
+
     // 简化方案：使用模板字符串但明确处理 null 值
     const result = await sql`
       UPDATE suspects 
@@ -154,7 +164,7 @@ export async function updateSuspect(id: number, updates: Partial<Suspect>) {
       WHERE id = ${id}
       RETURNING *
     `;
-    
+
     return result[0];
   } catch (error) {
     console.error('Update suspect error:', error);
@@ -186,21 +196,23 @@ export async function getSuspectById(id: number) {
 }
 
 // 批量更新嫌疑人状态
-export async function updateSuspectsBatch(updates: Array<{
-  steam_id: string;
-  nickname?: string;
-  personaname?: string;
-  status?: string;
-  vac_banned?: boolean;
-  game_ban_count?: number;
-  current_gameid?: number;
-  game_server_ip?: string;
-  last_logoff?: number;
-  avatar_url?: string;
-}>) {
+export async function updateSuspectsBatch(
+  updates: Array<{
+    steam_id: string;
+    nickname?: string;
+    personaname?: string;
+    status?: string;
+    vac_banned?: boolean;
+    game_ban_count?: number;
+    current_gameid?: number;
+    game_server_ip?: string;
+    last_logoff?: number;
+    avatar_url?: string;
+  }>
+) {
   try {
     const sql = getConnection();
-    
+
     for (const update of updates) {
       await sql`
         UPDATE suspects 

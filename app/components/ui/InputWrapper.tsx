@@ -16,19 +16,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor={inputId}
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             {label}
           </label>
         )}
-        <ShadcnInput
-          id={inputId}
-          ref={ref}
-          className={className}
-          {...props}
-        />
-        {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
-        )}
+        <ShadcnInput id={inputId} ref={ref} className={className} {...props} />
+        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         {helperText && !error && (
           <p className="mt-1 text-sm text-gray-500">{helperText}</p>
         )}

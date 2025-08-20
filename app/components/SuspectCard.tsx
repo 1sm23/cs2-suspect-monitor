@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface SuspectCardProps {
   suspect: Suspect;
@@ -52,40 +52,52 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
   const displayName = () => {
     const personaName = suspect.personaname || suspect.steam_id;
     const nickname = suspect.nickname;
-    
+
     if (nickname) {
       return (
         <div className="flex items-baseline gap-2">
           <span>{personaName}</span>
-          <span className="text-sm text-muted-foreground truncate" title={nickname}>({nickname})</span>
+          <span
+            className="text-sm text-muted-foreground truncate"
+            title={nickname}
+          >
+            ({nickname})
+          </span>
         </div>
       );
     }
-    
+
     return personaName;
   };
 
   const getProfileUrl = () => {
     // 如果有 profile_url 就使用，否则构建一个默认的 Steam profile URL
-    return suspect.profile_url || `https://steamcommunity.com/profiles/${suspect.steam_id}`;
+    return (
+      suspect.profile_url ||
+      `https://steamcommunity.com/profiles/${suspect.steam_id}`
+    );
   };
 
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border h-full flex flex-col">
       <div className="flex items-start space-x-4 flex-1">
         <Image
-          src={imageError || !suspect.avatar_url ? '/avatar_placeholder.svg' : suspect.avatar_url}
+          src={
+            imageError || !suspect.avatar_url
+              ? '/avatar_placeholder.svg'
+              : suspect.avatar_url
+          }
           alt={suspect.personaname || suspect.steam_id}
           width={64}
           height={64}
-          className="rounded-full flex-shrink-0"
+          className="rounded-full flex-shrink-0 select-none"
           onError={handleImageError}
           unoptimized={imageError || !suspect.avatar_url}
         />
         <div className="flex-1 min-w-0 flex flex-col h-full">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-foreground truncate">
-              <a
+              <Link
                 href={getProfileUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -93,26 +105,30 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
                 title={getProfileUrl()}
               >
                 {displayName()}
-              </a>
+              </Link>
             </h3>
             {/* <p className="text-sm text-muted-foreground mb-2">{suspect.steam_id}</p> */}
-            
+
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <StatusBadge status={suspect.status} />
-              <VACBadge 
-                vacBanned={suspect.vac_banned || false} 
-                gameBanCount={suspect.game_ban_count || 0} 
+              <VACBadge
+                vacBanned={suspect.vac_banned || false}
+                gameBanCount={suspect.game_ban_count || 0}
               />
-              <CS2StatusBadge 
-                currentGameId={suspect.current_gameid} 
+              <CS2StatusBadge
+                currentGameId={suspect.current_gameid}
                 gameServerIp={suspect.game_server_ip}
               />
-              <Badge 
-                variant={suspect.category === 'confirmed' ? 'destructive' : 'secondary'}
+              <Badge
+                variant={
+                  suspect.category === 'confirmed' ? 'destructive' : 'secondary'
+                }
                 className={
-                  suspect.category === 'confirmed' ? '' : 
-                  suspect.category === 'high_risk' ? 'bg-orange-500 text-white hover:bg-orange-600' : 
-                  'bg-yellow-500 text-white hover:bg-yellow-600'
+                  suspect.category === 'confirmed'
+                    ? ''
+                    : suspect.category === 'high_risk'
+                      ? 'bg-orange-500 text-white hover:bg-orange-600'
+                      : 'bg-yellow-500 text-white hover:bg-yellow-600'
                 }
               >
                 {t(`suspects.category.${suspect.category}` as any)}
@@ -132,7 +148,7 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
                 {t(`suspects.category.${suspect.category}` as any)}
               </Badge>
             </div> */}
-            
+
             <div className="text-xs text-muted-foreground space-y-1 mb-3">
               {/* {suspect.last_checked && (
                 <div>
@@ -148,19 +164,23 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
               )} */}
               {suspect.last_logoff && (
                 <div>
-                  {t('suspects.last_logoff')}: {new Date(suspect.last_logoff * 1000).toLocaleString('zh-CN', {
-                    timeZone: 'Asia/Shanghai',
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
+                  {t('suspects.last_logoff')}:{' '}
+                  {new Date(suspect.last_logoff * 1000).toLocaleString(
+                    'zh-CN',
+                    {
+                      timeZone: 'Asia/Shanghai',
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }
+                  )}
                 </div>
               )}
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-2 mt-auto pt-2">
             <Button
               onClick={() => setEditDialogOpen(true)}
@@ -184,7 +204,9 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t('common.delete_confirm_title')}</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    {t('common.delete_confirm_title')}
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
                     {t('common.delete_confirm_description')}
                   </AlertDialogDescription>
