@@ -100,7 +100,7 @@ export async function addSuspect(suspect: {
         ${suspect.profile_url || null},
         ${suspect.avatar_url || null},
         ${suspect.status || 'unknown'},
-        ${suspect.vac_banned ? 1 : 0},
+        ${suspect.vac_banned || false},
         ${suspect.game_ban_count || 0},
         ${suspect.current_gameid || null},
         ${suspect.game_server_ip || null},
@@ -178,7 +178,7 @@ export async function updateSuspectsBatch(updates: Array<{
           current_gameid = ${update.current_gameid || null},
           game_server_ip = ${update.game_server_ip || null},
           personaname = ${update.personaname || null},
-          vac_banned = ${update.vac_banned ? 1 : 0},
+          vac_banned = ${update.vac_banned || false},
           game_ban_count = ${update.game_ban_count || 0},
           last_logoff = ${update.last_logoff || null},
           last_checked = CURRENT_TIMESTAMP

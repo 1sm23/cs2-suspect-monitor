@@ -4,7 +4,7 @@ import {
   addSuspect, 
   initDatabase,
   updateSuspectsBatch 
-} from '@/lib/db-vercel';
+} from '@/lib/db';
 import { getSteamPlayerSummaries, getSteamPlayerBans } from '@/lib/steam';
 import { steamCache } from '@/lib/steam-cache';
 
@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
 
     // 如果没有筛选条件，更新 Steam 数据
     if (suspects.length > 0 && !filterOnline && !filterCS2Launched && !filterInGame) {
-      const steamIds = suspects.map(s => s.steam_id).join(',');
+      const steamIdArray = suspects.map(s => s.steam_id);
+      const steamIds = steamIdArray.join(',');
       const cacheKey = `steam_data_${steamIds}`;
       
       let steamData = steamCache.get(cacheKey);
@@ -42,8 +43,8 @@ export async function GET(request: NextRequest) {
       if (!steamData || !steamBanData) {
         console.log('🔄 Cache miss - calling Steam API for', suspects.length, 'suspects');
         
-        steamData = await getSteamPlayerSummaries(steamIds);
-        steamBanData = await getSteamPlayerBans(steamIds);
+        steamData = await getSteamPlayerSummaries(steamIdArray);
+        steamBanData = await getSteamPlayerBans(steamIdArray);
         
         steamCache.set(cacheKey, steamData, 300);
         steamCache.set(`steam_bans_${steamIds}`, steamBanData, 300);
@@ -52,20 +53,20 @@ export async function GET(request: NextRequest) {
       }
 
       // 批量更新数据库
-      if (steamData?.response?.players && steamBanData?.players) {
+      if (steamData && steamData.length > 0 && steamBanData && steamBanData.length > 0) {
         const updates = suspects.map(suspect => {
-          const steamPlayer = steamData.response.players.find(p => p.steamid === suspect.steam_id);
-          const steamBan = steamBanData.players.find(p => p.SteamId === suspect.steam_id);
+          const steamPlayer = steamData.find((p: any) => p.steamid === suspect.steam_id);
+          const steamBan = steamBanData.find((p: any) => p.SteamId === suspect.steam_id);
 
           return {
             steam_id: suspect.steam_id,
             status: steamPlayer?.personastate !== undefined ? getStatusFromPersonaState(steamPlayer.personastate) : 'unknown',
-            current_gameid: steamPlayer?.gameid ? parseInt(steamPlayer.gameid) : null,
-            game_server_ip: steamPlayer?.gameserverip || null,
-            personaname: steamPlayer?.personaname || null,
+            current_gameid: steamPlayer?.gameid ? parseInt(steamPlayer.gameid) : undefined,
+            game_server_ip: steamPlayer?.gameserverip || undefined,
+            personaname: steamPlayer?.personaname || undefined,
             vac_banned: steamBan?.VACBanned || false,
             game_ban_count: steamBan?.NumberOfGameBans || 0,
-            last_logoff: steamPlayer?.lastlogoff ? new Date(steamPlayer.lastlogoff * 1000).toISOString() : null
+            last_logoff: steamPlayer?.lastlogoff ? new Date(steamPlayer.lastlogoff * 1000).toISOString() : undefined
           };
         });
 
@@ -108,11 +109,11 @@ export async function POST(request: Request) {
     }
 
     // 获取 Steam 数据
-    const steamData = await getSteamPlayerSummaries(extractedSteamId);
-    const steamBanData = await getSteamPlayerBans(extractedSteamId);
+    const steamData = await getSteamPlayerSummaries([extractedSteamId]);
+    const steamBanData = await getSteamPlayerBans([extractedSteamId]);
 
-    const steamPlayer = steamData?.response?.players?.[0];
-    const steamBan = steamBanData?.players?.[0];
+    const steamPlayer = steamData?.[0];
+    const steamBan = steamBanData?.[0];
 
     if (!steamPlayer) {
       return Response.json({ error: 'Steam user not found' }, { status: 404 });
@@ -121,17 +122,17 @@ export async function POST(request: Request) {
     // 添加到数据库
     const newSuspect = await addSuspect({
       steam_id: extractedSteamId,
-      nickname: nickname || null,
-      personaname: steamPlayer.personaname || null,
+      nickname: nickname || undefined,
+      personaname: steamPlayer?.personaname || undefined,
       category,
-      profile_url: steamPlayer.profileurl || null,
-      avatar_url: steamPlayer.avatarfull || null,
-      status: getStatusFromPersonaState(steamPlayer.personastate),
+      profile_url: steamPlayer?.profileurl || undefined,
+      avatar_url: steamPlayer?.avatarfull || undefined,
+      status: steamPlayer ? getStatusFromPersonaState(steamPlayer.personastate) : 'unknown',
       vac_banned: steamBan?.VACBanned || false,
       game_ban_count: steamBan?.NumberOfGameBans || 0,
-      current_gameid: steamPlayer.gameid ? parseInt(steamPlayer.gameid) : null,
-      game_server_ip: steamPlayer.gameserverip || null,
-      last_logoff: steamPlayer.lastlogoff ? new Date(steamPlayer.lastlogoff * 1000).toISOString() : null
+      current_gameid: steamPlayer?.gameid ? parseInt(steamPlayer.gameid) : undefined,
+      game_server_ip: steamPlayer?.gameserverip || undefined,
+      last_logoff: steamPlayer?.lastlogoff ? new Date(steamPlayer.lastlogoff * 1000).toISOString() : undefined
     });
 
     return Response.json(newSuspect);

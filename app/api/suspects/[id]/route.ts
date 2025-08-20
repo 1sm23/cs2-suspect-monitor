@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { getSuspectById, updateSuspect, deleteSuspect, initDatabase } from '@/lib/db-vercel';
+import { getSuspectById, updateSuspect, deleteSuspect, initDatabase } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,

@@ -9,7 +9,6 @@ const nextConfig = {
     forceSwcTransforms: false,
   },
   
-  serverExternalPackages: ['better-sqlite3'],
   images: {
     remotePatterns: [
       {
