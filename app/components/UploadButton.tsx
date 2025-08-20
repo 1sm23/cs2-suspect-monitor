@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useLanguage } from './LanguageProvider';
+import { useTranslations } from '@/lib/i18n';
 
 interface UploadButtonProps {
   onUpload: (filePath: string) => void;
@@ -10,7 +10,7 @@ interface UploadButtonProps {
 }
 
 export function UploadButton({ onUpload, accept, children }: UploadButtonProps) {
-  const { t } = useLanguage();
+  const t = useTranslations();
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

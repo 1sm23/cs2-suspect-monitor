@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useLanguage } from './LanguageProvider';
+import { useTranslations } from '@/lib/i18n';
 
 interface EvidenceFormProps {
   suspectId: number;
@@ -9,7 +9,7 @@ interface EvidenceFormProps {
 }
 
 export function EvidenceForm({ suspectId, onSubmit }: EvidenceFormProps) {
-  const { t } = useLanguage();
+  const t = useTranslations();
   const [formData, setFormData] = useState({
     type: 'text',
     title: '',

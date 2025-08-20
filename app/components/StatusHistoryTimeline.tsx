@@ -1,14 +1,14 @@
 'use client';
 
 import { SuspectStatusHistory } from '@/lib/types';
-import { useLanguage } from './LanguageProvider';
+import { useTranslations } from '@/lib/i18n';
 
 interface StatusHistoryTimelineProps {
   history: SuspectStatusHistory[];
 }
 
 export function StatusHistoryTimeline({ history }: StatusHistoryTimelineProps) {
-  const { t } = useLanguage();
+  const t = useTranslations();
 
   if (history.length === 0) {
     return (
@@ -51,11 +51,11 @@ export function StatusHistoryTimeline({ history }: StatusHistoryTimelineProps) {
                     <p className="text-sm text-gray-900">
                       Status changed from{' '}
                       <span className="font-medium">
-                        {item.old_status ? t(`status.${item.old_status}` as any) : 'Unknown'}
+                        {item.old_status ? t((`status.${item.old_status}`) as any) : 'Unknown'}
                       </span>{' '}
                       to{' '}
                       <span className="font-medium">
-                        {t(`status.${item.new_status}` as any)}
+                        {t((`status.${item.new_status}`) as any)}
                       </span>
                     </p>
                     {item.nickname && (

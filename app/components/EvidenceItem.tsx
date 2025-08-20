@@ -1,7 +1,7 @@
 'use client';
 
 import { Evidence } from '@/lib/types';
-import { useLanguage } from './LanguageProvider';
+import { useTranslations } from '@/lib/i18n';
 
 interface EvidenceItemProps {
   evidence: Evidence;
@@ -9,7 +9,7 @@ interface EvidenceItemProps {
 }
 
 export function EvidenceItem({ evidence, onDelete }: EvidenceItemProps) {
-  const { t } = useLanguage();
+  const t = useTranslations();
 
   const handleDelete = () => {
     if (confirm(t('common.confirm'))) {
@@ -72,7 +72,7 @@ export function EvidenceItem({ evidence, onDelete }: EvidenceItemProps) {
         <div>
           <h4 className="font-semibold text-gray-900">{evidence.title}</h4>
           <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-            {t(`evidence.types.${evidence.type}` as any)}
+            {t((`evidence.types.${evidence.type}`) as any)}
           </span>
         </div>
         <button

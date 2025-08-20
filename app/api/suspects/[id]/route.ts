@@ -3,9 +3,9 @@ import db from '@/lib/db';
 import { Suspect } from '@/lib/types';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET /api/suspects/[id] - 获取单个嫌疑人
