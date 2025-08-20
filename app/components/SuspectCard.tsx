@@ -57,12 +57,17 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
       return (
         <div className="flex items-baseline gap-2">
           <span>{personaName}</span>
-          <span className="text-sm text-muted-foreground">({nickname})</span>
+          <span className="text-sm text-muted-foreground truncate" title={nickname}>({nickname})</span>
         </div>
       );
     }
     
     return personaName;
+  };
+
+  const getProfileUrl = () => {
+    // 如果有 profile_url 就使用，否则构建一个默认的 Steam profile URL
+    return suspect.profile_url || `https://steamcommunity.com/profiles/${suspect.steam_id}`;
   };
 
   return (
@@ -80,9 +85,17 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
         <div className="flex-1 min-w-0 flex flex-col h-full">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-foreground truncate">
-              {displayName()}
+              <a
+                href={getProfileUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline hover:text-primary transition-colors cursor-pointer"
+                title={getProfileUrl()}
+              >
+                {displayName()}
+              </a>
             </h3>
-            <p className="text-sm text-muted-foreground mb-2">{suspect.steam_id}</p>
+            {/* <p className="text-sm text-muted-foreground mb-2">{suspect.steam_id}</p> */}
             
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <StatusBadge status={suspect.status} />

@@ -77,9 +77,9 @@ export function NavigationBar() {
   );
 
   return (
-    <nav className="bg-blue-600 text-white shadow-lg">
+    <nav className="bg-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14">
           <div className="flex items-center space-x-8">
             <Link href="/suspects" className="text-xl font-bold">
               CS2 Monitor

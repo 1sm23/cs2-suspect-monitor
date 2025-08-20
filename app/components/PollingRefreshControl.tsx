@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface PollingRefreshControlProps {
   onRefresh: () => Promise<void>;
@@ -12,7 +14,7 @@ interface PollingRefreshControlProps {
 export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRefreshControlProps) {
   const t = useTranslations();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
   const [countdown, setCountdown] = useState(30);
 
   useEffect(() => {
@@ -55,16 +57,14 @@ export function PollingRefreshControl({ onRefresh, interval = 30000 }: PollingRe
   return (
     <div className="flex items-center space-x-4 bg-muted/50 p-4 rounded-lg border border-border">
       <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="autoRefresh"
           checked={autoRefresh}
-          onChange={(e) => setAutoRefresh(e.target.checked)}
-          className="h-4 w-4 text-primary border-border rounded accent-primary"
+          onCheckedChange={(checked) => setAutoRefresh(checked === true)}
         />
-        <label htmlFor="autoRefresh" className="text-sm text-foreground">
+        <Label htmlFor="autoRefresh" className="text-sm text-foreground">
           {t('suspects.auto_refresh')}
-        </label>
+        </Label>
       </div>
 
       {autoRefresh && (

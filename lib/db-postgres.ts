@@ -134,25 +134,27 @@ export async function updateSuspect(id: number, updates: Partial<Suspect>) {
   try {
     const sql = getConnection();
     
+    // 简化方案：使用模板字符串但明确处理 null 值
     const result = await sql`
       UPDATE suspects 
       SET 
-        nickname = COALESCE(${updates.nickname}, nickname),
-        category = COALESCE(${updates.category}, category),
-        profile_url = COALESCE(${updates.profile_url}, profile_url),
-        avatar_url = COALESCE(${updates.avatar_url}, avatar_url),
-        status = COALESCE(${updates.status}, status),
-        vac_banned = COALESCE(${updates.vac_banned}, vac_banned),
-        game_ban_count = COALESCE(${updates.game_ban_count}, game_ban_count),
-        current_gameid = COALESCE(${updates.current_gameid}, current_gameid),
-        game_server_ip = COALESCE(${updates.game_server_ip}, game_server_ip),
-        last_logoff = COALESCE(${updates.last_logoff}, last_logoff),
-        personaname = COALESCE(${updates.personaname}, personaname),
-        ban_details = COALESCE(${updates.ban_details}, ban_details),
+        nickname = ${updates.hasOwnProperty('nickname') ? updates.nickname : sql`nickname`},
+        category = ${updates.category !== undefined ? updates.category : sql`category`},
+        profile_url = ${updates.profile_url !== undefined ? updates.profile_url : sql`profile_url`},
+        avatar_url = ${updates.avatar_url !== undefined ? updates.avatar_url : sql`avatar_url`},
+        status = ${updates.status !== undefined ? updates.status : sql`status`},
+        vac_banned = ${updates.vac_banned !== undefined ? updates.vac_banned : sql`vac_banned`},
+        game_ban_count = ${updates.game_ban_count !== undefined ? updates.game_ban_count : sql`game_ban_count`},
+        current_gameid = ${updates.current_gameid !== undefined ? updates.current_gameid : sql`current_gameid`},
+        game_server_ip = ${updates.game_server_ip !== undefined ? updates.game_server_ip : sql`game_server_ip`},
+        last_logoff = ${updates.last_logoff !== undefined ? updates.last_logoff : sql`last_logoff`},
+        personaname = ${updates.personaname !== undefined ? updates.personaname : sql`personaname`},
+        ban_details = ${updates.ban_details !== undefined ? updates.ban_details : sql`ban_details`},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING *
     `;
+    
     return result[0];
   } catch (error) {
     console.error('Update suspect error:', error);
@@ -203,7 +205,6 @@ export async function updateSuspectsBatch(updates: Array<{
       await sql`
         UPDATE suspects 
         SET 
-          nickname = ${update.nickname || null},
           personaname = ${update.personaname || null},
           status = ${update.status || 'clean'},
           vac_banned = ${update.vac_banned || false},
