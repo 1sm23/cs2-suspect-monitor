@@ -177,7 +177,7 @@ Backend API supports dynamic filtering:
   - [ ] Data export functionality
 
 - [ ] **User Experience Optimization**
-  - [ ] Dark mode support
+  - [x] Dark mode support
   - [ ] Responsive layout optimization
   - [ ] Keyboard shortcuts
   - [ ] Loading state optimization
