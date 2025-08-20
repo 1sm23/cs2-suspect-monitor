@@ -1,21 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { NavigationBar } from '@/app/components/NavigationBar';
 import { Input } from '@/app/components/ui/InputWrapper';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/lib/i18n';
+import { authManager } from '@/lib/auth-manager';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AddSuspectPage() {
   const [steamInput, setSteamInput] = useState('');
   const [nickname, setNickname] = useState('');
   const [category, setCategory] = useState<'confirmed' | 'high_risk' | 'suspected'>('confirmed');
   const [isLoading, setIsLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [inputHelp, setInputHelp] = useState('');
   const router = useRouter();
   const t = useTranslations();
+
+  // 客户端认证检查
+  useEffect(() => {
+    if (!authManager.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+    setPageLoading(false);
+  }, [router]);
 
   // 提取Steam ID的函数
   const extractSteamIdFromUrl = (input: string): string | null => {
@@ -73,7 +85,7 @@ export default function AddSuspectPage() {
     }
 
     try {
-      const response = await fetch('/api/suspects', {
+      const response = await authManager.authenticatedFetch('/api/suspects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,6 +110,64 @@ export default function AddSuspectPage() {
       setIsLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <NavigationBar />
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto">
+            <div className="mb-6">
+              <Skeleton className="h-9 w-48" />
+            </div>
+
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="space-y-6">
+                {/* Steam ID输入框骨架屏 */}
+                <div>
+                  <Skeleton className="h-5 w-20 mb-2" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-4 w-3/4 mt-1" />
+                </div>
+
+                {/* 昵称输入框骨架屏 */}
+                <div>
+                  <Skeleton className="h-5 w-24 mb-2" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-4 w-2/3 mt-1" />
+                </div>
+
+                {/* 分类选择骨架屏 */}
+                <div>
+                  <Skeleton className="h-5 w-16 mb-2" />
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-12" />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-14" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 按钮骨架屏 */}
+                <div className="flex space-x-3">
+                  <Skeleton className="h-10 flex-1" />
+                  <Skeleton className="h-10 w-20" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

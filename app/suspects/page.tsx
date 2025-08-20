@@ -13,10 +13,48 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
 import { authManager } from '@/lib/auth-manager';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// 嫌疑人卡片骨架屏组件
+function SuspectCardSkeleton() {
+  return (
+    <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
+      {/* 头像和基本信息 */}
+      <div className="flex items-center space-x-4 mb-4">
+        <Skeleton className="h-16 w-16 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      </div>
+      
+      {/* 状态徽章 */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Skeleton className="h-6 w-16 rounded-full" />
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-12 rounded-full" />
+      </div>
+      
+      {/* 最后状态和时间 */}
+      <div className="space-y-2 mb-4">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+      
+      {/* 按钮区域 */}
+      <div className="flex gap-2">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-20" />
+      </div>
+    </div>
+  );
+}
 
 export default function SuspectsPage() {
   const [suspects, setSuspects] = useState<Suspect[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filtering, setFiltering] = useState(false);
   const [error, setError] = useState('');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [filterOnline, setFilterOnline] = useState(false);
@@ -33,8 +71,12 @@ export default function SuspectsPage() {
     }
   }, [router]);
 
-  const fetchSuspects = async () => {
+  const fetchSuspects = async (isFilter = false) => {
     try {
+      if (isFilter) {
+        setFiltering(true);
+      }
+      
       // 构建筛选参数
       const params = new URLSearchParams();
       if (filterOnline) params.append('online', 'true');
@@ -57,6 +99,9 @@ export default function SuspectsPage() {
       setError(t('common.error'));
     } finally {
       setLoading(false);
+      if (isFilter) {
+        setFiltering(false);
+      }
     }
   };
 
@@ -66,7 +111,9 @@ export default function SuspectsPage() {
 
   // 当筛选条件改变时重新获取数据
   useEffect(() => {
-    fetchSuspects();
+    if (!loading) { // 只有在初始加载完成后才触发过滤
+      fetchSuspects(true);
+    }
   }, [filterOnline, filterGameLaunched, filterInGame]);
 
   const handleDelete = async (id: number) => {
@@ -88,6 +135,7 @@ export default function SuspectsPage() {
 
   const handleRefresh = useCallback(async () => {
     try {
+      setRefreshing(true);
       // 构建筛选参数，和 fetchSuspects 保持一致
       const params = new URLSearchParams();
       if (filterOnline) params.append('online', 'true');
@@ -107,6 +155,8 @@ export default function SuspectsPage() {
     } catch (error) {
       console.error('Failed to fetch suspects:', error);
       setError(t('common.error'));
+    } finally {
+      setRefreshing(false);
     }
   }, [filterOnline, filterGameLaunched, filterInGame, t]);
 
@@ -123,10 +173,43 @@ export default function SuspectsPage() {
       <div className="min-h-screen bg-background">
         <NavigationBar />
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="text-lg text-foreground">{t('common.loading')}</div>
+          <div className="mb-6">
+            <Skeleton className="h-9 w-48" />
+          </div>
+
+          <div className="mb-6">
+            <Skeleton className="h-10 w-full max-w-md" />
+          </div>
+
+          {/* 筛选控制骨架屏 */}
+          <div className="mb-6 bg-card rounded-lg shadow-sm p-4 border border-border">
+            <Skeleton className="h-5 w-24 mb-3" />
+            <div className="flex flex-wrap gap-6">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-5 w-10" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-5 w-10" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-5 w-10" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            </div>
+          </div>
+
+          {/* 嫌疑人卡片骨架屏 */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <SuspectCardSkeleton key={index} />
+            ))}
           </div>
         </div>
+
+        {/* 固定的加号按钮骨架屏 */}
+        <Skeleton className="fixed bottom-6 right-6 h-14 w-14 rounded-full" />
       </div>
     );
   }
@@ -188,7 +271,13 @@ export default function SuspectsPage() {
           </div>
         )}
 
-        {suspects.length === 0 ? (
+        {refreshing || filtering ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: Math.max(suspects.length, 3) }).map((_, index) => (
+              <SuspectCardSkeleton key={`loading-skeleton-${index}`} />
+            ))}
+          </div>
+        ) : suspects.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-muted-foreground">
               No suspects found. Add some suspects to start monitoring.
