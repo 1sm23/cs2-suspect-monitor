@@ -6,6 +6,7 @@ import { useTranslations, useI18nStore } from '@/lib/i18n';
 import { useTheme } from 'next-themes';
 import { Moon, Sun, Monitor } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { authManager } from '@/lib/auth-manager';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,11 +30,15 @@ export function NavigationBar() {
 
   const handleLogout = async () => {
     try {
+      // 清除本地token
+      authManager.removeToken();
+      // 可选：调用服务端logout（不需要认证）
       await fetch('/api/auth', { method: 'DELETE' });
       router.push('/login');
-      router.refresh();
     } catch (error) {
       console.error('Logout failed:', error);
+      // 即使服务端调用失败，也要跳转到登录页
+      router.push('/login');
     }
   };
 

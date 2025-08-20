@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from '@/lib/i18n';
+import { authManager } from '@/lib/auth-manager';
 
 interface UploadButtonProps {
   onUpload: (filePath: string) => void;
@@ -22,7 +23,7 @@ export function UploadButton({ onUpload, accept, children }: UploadButtonProps) 
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload', {
+      const response = await authManager.authenticatedFetch('/api/upload', {
         method: 'POST',
         body: formData,
       });

@@ -30,23 +30,29 @@ class AuthManager {
   }
   
   // 获取认证头
-  getAuthHeaders(): HeadersInit {
+  getAuthHeaders(isFileUpload: boolean = false): HeadersInit {
     const token = this.getToken();
+    const headers: HeadersInit = {};
+    
     if (token) {
-      return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
+      headers['Authorization'] = `Bearer ${token}`;
     }
-    return {
-      'Content-Type': 'application/json'
-    };
+    
+    // 文件上传时不设置Content-Type，让浏览器自动设置
+    if (!isFileUpload) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    return headers;
   }
   
   // 带认证的 fetch
   async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    // 检查是否是文件上传（包含FormData）
+    const isFileUpload = options.body instanceof FormData;
+    
     const headers = {
-      ...this.getAuthHeaders(),
+      ...this.getAuthHeaders(isFileUpload),
       ...(options.headers || {})
     };
     

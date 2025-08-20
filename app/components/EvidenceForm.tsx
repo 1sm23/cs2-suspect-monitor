@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from '@/lib/i18n';
+import { authManager } from '@/lib/auth-manager';
 
 interface EvidenceFormProps {
   suspectId: number;
@@ -32,7 +33,7 @@ export function EvidenceForm({ suspectId, onSubmit }: EvidenceFormProps) {
         formDataToSend.append('file', formData.file);
       }
 
-      const response = await fetch(`/api/suspects/${suspectId}/evidence`, {
+      const response = await authManager.authenticatedFetch(`/api/suspects/${suspectId}/evidence`, {
         method: 'POST',
         body: formDataToSend,
       });

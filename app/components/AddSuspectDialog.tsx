@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/app/components/ui/InputWrapper';
 import { useTranslations } from '@/lib/i18n';
+import { authManager } from '@/lib/auth-manager';
 import {
   Dialog,
   DialogContent,
@@ -92,7 +93,7 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
     }
 
     try {
-      const response = await fetch('/api/suspects', {
+      const response = await authManager.authenticatedFetch('/api/suspects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

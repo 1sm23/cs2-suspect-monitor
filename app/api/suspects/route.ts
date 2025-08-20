@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { 
   getAllSuspects, 
   addSuspect, 
@@ -100,13 +100,21 @@ export async function POST(request: Request) {
     await initDatabase();
 
     const body = await request.json();
-    const { steam_input, nickname, category } = body;
+    const { steam_id, nickname, category } = body;
+
+    // 验证必需的字段
+    if (!steam_id) {
+      return Response.json(
+        { error: 'Steam ID is required' },
+        { status: 400 }
+      );
+    }
 
     // Steam ID 提取逻辑保持不变...
-    let extractedSteamId = steam_input;
+    let extractedSteamId = steam_id;
     
-    if (steam_input.includes('steamcommunity.com')) {
-      const matches = steam_input.match(/(?:profiles|id)\/([^\/]+)/);
+    if (steam_id && steam_id.includes('steamcommunity.com')) {
+      const matches = steam_id.match(/(?:profiles|id)\/([^\/]+)/);
       if (matches) {
         extractedSteamId = matches[1];
       }

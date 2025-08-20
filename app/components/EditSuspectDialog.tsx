@@ -6,6 +6,7 @@ import { useTranslations } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { authManager } from '@/lib/auth-manager';
 import {
   Dialog,
   DialogContent,
@@ -45,7 +46,7 @@ export function EditSuspectDialog({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/suspects?id=${suspect.id}`, {
+      const response = await authManager.authenticatedFetch(`/api/suspects?id=${suspect.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
