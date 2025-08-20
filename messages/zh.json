@@ -85,5 +85,11 @@
     "edit": "编辑",
     "delete_confirm_title": "删除嫌疑人",
     "delete_confirm_description": "确定要删除这个嫌疑人吗？此操作无法撤销。"
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
   }
 }

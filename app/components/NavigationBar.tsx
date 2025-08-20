@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { useTranslations, useI18nStore } from '@/lib/i18n';
+import { useTranslations, useI18nStore, useTheme } from '@/lib/i18n';
+import { Moon, Sun, Monitor } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import {
 export function NavigationBar() {
   const t = useTranslations();
   const { locale, setLocale } = useI18nStore();
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -29,6 +31,21 @@ export function NavigationBar() {
 
   const handleLanguageChange = (newLocale: 'en' | 'zh') => {
     setLocale(newLocale);
+  };
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light':
+        return <Sun className="h-4 w-4" />;
+      case 'dark':
+        return <Moon className="h-4 w-4" />;
+      default:
+        return <Monitor className="h-4 w-4" />;
+    }
   };
 
   return (
@@ -56,6 +73,35 @@ export function NavigationBar() {
           </div>
           
           <div className="flex items-center space-x-4">
+            <Select value={theme} onValueChange={handleThemeChange}>
+              <SelectTrigger className="w-[120px] bg-blue-700 text-white border-blue-600 hover:bg-blue-800">
+                <div className="flex items-center gap-2">
+                  {getThemeIcon()}
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">
+                  <div className="flex items-center gap-2">
+                    <Sun className="h-4 w-4" />
+                    {t('theme.light')}
+                  </div>
+                </SelectItem>
+                <SelectItem value="dark">
+                  <div className="flex items-center gap-2">
+                    <Moon className="h-4 w-4" />
+                    {t('theme.dark')}
+                  </div>
+                </SelectItem>
+                <SelectItem value="system">
+                  <div className="flex items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    {t('theme.system')}
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            
             <Select value={locale} onValueChange={handleLanguageChange}>
               <SelectTrigger className="w-[120px] bg-blue-700 text-white border-blue-600 hover:bg-blue-800">
                 <SelectValue />
