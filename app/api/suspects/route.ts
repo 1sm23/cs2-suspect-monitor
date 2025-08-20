@@ -9,6 +9,7 @@ import {
 } from '@/lib/db';
 import { getSteamPlayerSummaries, getSteamPlayerBans } from '@/lib/steam';
 import { steamCache } from '@/lib/steam-cache';
+import type { Suspect } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     // 如果没有筛选条件，更新 Steam 数据
     if (suspects.length > 0 && !filterOnline && !filterCS2Launched && !filterInGame) {
-      const steamIdArray = suspects.map(s => s.steam_id);
+      const steamIdArray = suspects.map((s: Suspect) => s.steam_id);
       const steamIds = steamIdArray.join(',');
       const cacheKey = `steam_data_${steamIds}`;
       
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
 
       // 批量更新数据库
       if (steamData && steamData.length > 0 && steamBanData && steamBanData.length > 0) {
-        const updates = suspects.map(suspect => {
+        const updates = suspects.map((suspect: Suspect) => {
           const steamPlayer = steamData.find((p: any) => p.steamid === suspect.steam_id);
           const steamBan = steamBanData.find((p: any) => p.SteamId === suspect.steam_id);
 

@@ -2,7 +2,7 @@ export interface Suspect {
   id: number;
   steam_id: string;
   nickname: string | null;
-  category: string;
+  category: 'confirmed' | 'high_risk' | 'suspected';
   profile_url: string | null;
   avatar_url: string | null;
   status: string;
