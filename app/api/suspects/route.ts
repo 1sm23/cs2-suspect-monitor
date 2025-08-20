@@ -3,7 +3,9 @@ import {
   getAllSuspects, 
   addSuspect, 
   initDatabase,
-  updateSuspectsBatch 
+  updateSuspectsBatch,
+  deleteSuspect,
+  updateSuspect
 } from '@/lib/db';
 import { getSteamPlayerSummaries, getSteamPlayerBans } from '@/lib/steam';
 import { steamCache } from '@/lib/steam-cache';
@@ -153,4 +155,48 @@ function getStatusFromPersonaState(personastate: number): string {
     6: 'looking to play'
   };
   return statusMap[personastate] || 'unknown';
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    await initDatabase();
+    
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    
+    if (!id) {
+      return Response.json({ error: 'Missing suspect ID' }, { status: 400 });
+    }
+    
+    await deleteSuspect(parseInt(id));
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete suspect:', error);
+    return Response.json({ error: 'Failed to delete suspect' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    await initDatabase();
+    
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    
+    if (!id) {
+      return Response.json({ error: 'Missing suspect ID' }, { status: 400 });
+    }
+    
+    const body = await request.json();
+    const updatedSuspect = await updateSuspect(parseInt(id), body);
+    
+    if (!updatedSuspect) {
+      return Response.json({ error: 'Suspect not found' }, { status: 404 });
+    }
+    
+    return Response.json(updatedSuspect);
+  } catch (error) {
+    console.error('Failed to update suspect:', error);
+    return Response.json({ error: 'Failed to update suspect' }, { status: 500 });
+  }
 }

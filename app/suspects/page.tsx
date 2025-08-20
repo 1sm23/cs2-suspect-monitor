@@ -58,7 +58,7 @@ export default function SuspectsPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await fetch(`/api/suspects/${id}`, {
+      const response = await fetch(`/api/suspects?id=${id}`, {
         method: 'DELETE',
       });
       

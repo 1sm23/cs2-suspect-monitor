@@ -111,7 +111,7 @@ cs2-suspect-monitor/
 │   ├── db.ts             # 数据库配置
 │   ├── steam.ts          # Steam API 集成
 │   └── i18n.ts           # 国际化
-├── messages/             # 翻译文件
+├── locales/             # 翻译文件
 ├── data/                 # SQLite 数据库 (gitignored)
 └── scripts/              # 工具脚本
 ```

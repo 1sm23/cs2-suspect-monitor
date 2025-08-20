@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import enMessages from '../messages/en.json';
-import zhMessages from '../messages/zh.json';
+import enMessages from '../locales/en.json';
+import zhMessages from '../locales/zh.json';
 
 export type Locale = 'en' | 'zh';
 

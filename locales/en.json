@@ -15,13 +15,19 @@
     "title": "CS2 Suspect Monitor",
     "list_title": "Suspects List",
     "add_title": "Add New Suspect",
+    "edit_title": "Edit Suspect",
+    "edit_description": "Update suspect information",
     "import_title": "Import Suspects",
     "steam_id": "Steam ID or URL",
     "nickname": "Nickname",
+    "nickname_placeholder": "Enter a nickname (optional)",
+    "personaname": "Steam Name",
     "status": "Status",
     "last_checked": "Last Checked",
     "last_logoff": "Last Logoff",
     "playing_cs2": "Playing CS2",
+    "playing_cs2_menu": "CS2 Launched",
+    "playing_cs2_in_game": "In Game",
     "playing_cs2_on_server": "Playing CS2 on server",
     "actions": "Actions",
     "add_button": "Add Suspect",
@@ -31,6 +37,10 @@
     "refreshing": "Refreshing...",
     "auto_refresh": "Auto refresh every 30s",
     "manual_refresh": "Manual refresh",
+    "filter_options": "Filter Options",
+    "filter_online": "Online Only",
+    "filter_game_launched": "CS2 Launched Only",
+    "filter_in_game": "In Game Only",
     "category_label": "Category",
     "category": {
       "confirmed": "Confirmed",
@@ -75,8 +85,17 @@
     "success": "Success",
     "cancel": "Cancel",
     "save": "Save",
+    "saving": "Saving...",
     "delete": "Delete",
     "confirm": "Confirm",
-    "edit": "Edit"
+    "edit": "Edit",
+    "delete_confirm_title": "Delete Suspect",
+    "delete_confirm_description": "Are you sure you want to delete this suspect? This action cannot be undone."
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   }
 }

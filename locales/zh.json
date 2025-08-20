@@ -15,13 +15,19 @@
     "title": "CS2嫌疑人监控",
     "list_title": "嫌疑人列表",
     "add_title": "添加新嫌疑人",
+    "edit_title": "编辑嫌疑人",
+    "edit_description": "更新嫌疑人信息",
     "import_title": "导入嫌疑人",
     "steam_id": "Steam ID 或 URL",
     "nickname": "昵称",
+    "nickname_placeholder": "输入昵称（可选）",
+    "personaname": "Steam 名称",
     "status": "状态",
     "last_checked": "最后检查",
     "last_logoff": "最后下线",
     "playing_cs2": "正在游玩 CS2",
+    "playing_cs2_menu": "CS2 已启动",
+    "playing_cs2_in_game": "正在游戏中",
     "playing_cs2_on_server": "正在服务器上游玩 CS2",
     "category_label": "类别",
     "category": {
@@ -36,7 +42,11 @@
     "refresh": "刷新",
     "refreshing": "刷新中...",
     "auto_refresh": "每30秒自动刷新",
-    "manual_refresh": "手动刷新"
+    "manual_refresh": "手动刷新",
+    "filter_options": "筛选选项",
+    "filter_online": "在线",
+    "filter_game_launched": "已启动 CS2",
+    "filter_in_game": "正在游戏中"
   },
   "evidence": {
     "title": "证据",
@@ -57,7 +67,7 @@
   "status": {
     "online": "在线",
     "offline": "离线",
-    "snooze": "打盹",
+    "snooze": "小憩",
     "away": "离开",
     "busy": "忙碌",
     "private": "私密",
@@ -75,8 +85,17 @@
     "success": "成功",
     "cancel": "取消",
     "save": "保存",
+    "saving": "保存中...",
     "delete": "删除",
     "confirm": "确认",
-    "edit": "编辑"
+    "edit": "编辑",
+    "delete_confirm_title": "删除嫌疑人",
+    "delete_confirm_description": "确定要删除这个嫌疑人吗？此操作无法撤销。"
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
   }
 }
