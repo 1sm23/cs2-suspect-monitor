@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { isAuthenticatedFromRequest } from './lib/auth';
+import { isAuthenticatedFromRequest } from './lib/jwt-auth';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -15,12 +15,18 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith(path)
     );
 
-    if (pathname.startsWith('/api/auth') || pathname === '/api/health') {
+    if (pathname.startsWith('/api/auth') || pathname === '/api/health' || pathname === '/api/debug') {
       return NextResponse.next();
     }
 
     if (isProtectedApiPath) {
+      // 只使用Token认证
       const isAuthenticated = await isAuthenticatedFromRequest(request);
+      
+      console.log('API Auth check:', { 
+        token: isAuthenticated 
+      });
+      
       if (!isAuthenticated) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
@@ -29,45 +35,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Check if the path requires authentication
-  const protectedPaths = ['/suspects'];
-  const isProtectedPath = protectedPaths.some(path => 
-    pathname.startsWith(path)
-  );
-
-  // Allow access to login page
-  if (pathname === '/login') {
-    console.log('Allowing access to:', pathname);
-    return NextResponse.next();
-  }
-
-  const isAuthenticated = await isAuthenticatedFromRequest(request);
-  console.log('Is authenticated:', isAuthenticated);
-
-  // Redirect to login if accessing protected path without authentication
-  if (isProtectedPath && !isAuthenticated) {
-    console.log('Redirecting to login - not authenticated for protected path:', pathname);
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // Redirect to suspects page if authenticated user tries to access login
-  if (pathname === '/login' && isAuthenticated) {
-    console.log('Redirecting to suspects - already authenticated');
-    return NextResponse.redirect(new URL('/suspects', request.url));
-  }
-
-  // Redirect root to suspects if authenticated, login if not
-  if (pathname === '/') {
-    if (isAuthenticated) {
-      console.log('Redirecting root to suspects - authenticated');
-      return NextResponse.redirect(new URL('/suspects', request.url));
-    } else {
-      console.log('Redirecting root to login - not authenticated');
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
-  console.log('Allowing request to continue to:', pathname);
+  // 对于页面路由，让客户端自行处理认证检查
+  // 这样可以避免服务端无法访问localStorage的问题
+  console.log('Allowing page request to continue to:', pathname);
   return NextResponse.next();
 }
 

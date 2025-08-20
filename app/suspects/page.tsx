@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { NavigationBar } from '@/app/components/NavigationBar';
 import { SuspectCard } from '@/app/components/SuspectCard';
 import { PollingRefreshControl } from '@/app/components/PollingRefreshControl';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
+import { authManager } from '@/lib/auth-manager';
 
 export default function SuspectsPage() {
   const [suspects, setSuspects] = useState<Suspect[]>([]);
@@ -20,7 +22,16 @@ export default function SuspectsPage() {
   const [filterOnline, setFilterOnline] = useState(false);
   const [filterInGame, setFilterInGame] = useState(false);
   const [filterGameLaunched, setFilterGameLaunched] = useState(false);
+  const router = useRouter();
   const t = useTranslations();
+
+  // 客户端认证检查
+  useEffect(() => {
+    if (!authManager.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+  }, [router]);
 
   const fetchSuspects = async () => {
     try {
@@ -31,7 +42,9 @@ export default function SuspectsPage() {
       if (filterInGame) params.append('in_game', 'true');
 
       const url = `/api/suspects${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await fetch(url);
+      
+      // 使用认证的fetch
+      const response = await authManager.authenticatedFetch(url);
       
       if (response.ok) {
         const data = await response.json();
@@ -58,7 +71,7 @@ export default function SuspectsPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await fetch(`/api/suspects?id=${id}`, {
+      const response = await authManager.authenticatedFetch(`/api/suspects?id=${id}`, {
         method: 'DELETE',
       });
       
@@ -82,7 +95,7 @@ export default function SuspectsPage() {
       if (filterInGame) params.append('in_game', 'true');
 
       const url = `/api/suspects${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await fetch(url);
+      const response = await authManager.authenticatedFetch(url);
       
       if (response.ok) {
         const data = await response.json();

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from '@/lib/i18n';
 import { Input } from '@/app/components/ui/InputWrapper';
 import { Button } from '@/components/ui/button';
+import { authManager } from '@/lib/auth-manager';
 
 export default function LoginPage() {
   const [password, setPassword] = useState('');
@@ -20,7 +21,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth', {
+      const response = await fetch('/api/auth-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,7 +30,11 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        // 添加一个短暂的延迟确保cookie被设置
+        const data = await response.json();
+        // 设置token到localStorage
+        authManager.setToken(data.token);
+        
+        // 延迟一下确保token已保存，然后强制刷新页面让middleware重新检查
         setTimeout(() => {
           window.location.href = '/suspects';
         }, 100);

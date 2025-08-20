@@ -23,33 +23,14 @@ export async function POST(request: NextRequest) {
 
     const token = await createAuthToken(password);
     
-    // 返回token而不是设置cookie
-    return NextResponse.json(
-      { 
-        message: 'Login successful',
-        token: token
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      message: 'Login successful',
+      token, // 返回 token 给前端
+      expiresIn: 86400 // 24 hours in seconds
+    }, { status: 200 });
+    
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    // Token-based认证不需要服务器端logout
-    // 客户端删除localStorage中的token即可
-    return NextResponse.json(
-      { message: 'Logout successful' },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('Logout error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
