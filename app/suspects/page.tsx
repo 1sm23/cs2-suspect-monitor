@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
 import { authManager } from '@/lib/auth-manager';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 // 嫌疑人卡片骨架屏组件
 function SuspectCardSkeleton() {
@@ -91,8 +92,13 @@ export default function SuspectsPage() {
       if (response.ok) {
         const data = await response.json();
         setSuspects(data);
+        // 只在非首次加载时显示成功提示
+        if (!loading) {
+          toast.success(t("suspects.messages.loaded_success"));
+        }
       } else {
         setError(t('common.error'));
+        toast.error(t("suspects.messages.load_failed"));
       }
     } catch (error) {
       console.error('Failed to fetch suspects:', error);
@@ -124,8 +130,10 @@ export default function SuspectsPage() {
       
       if (response.ok) {
         setSuspects(suspects.filter(s => s.id !== id));
+        toast.success(t("suspects.messages.deleted_success"));
       } else {
         setError(t('common.error'));
+        toast.error(t("suspects.messages.delete_failed"));
       }
     } catch (error) {
       console.error('Failed to delete suspect:', error);
@@ -149,8 +157,10 @@ export default function SuspectsPage() {
         const data = await response.json();
         setSuspects(data);
         setError('');
+        toast.success(t("suspects.messages.refreshed_success"));
       } else {
         setError(t('common.error'));
+        toast.error(t("suspects.messages.refresh_failed"));
       }
     } catch (error) {
       console.error('Failed to fetch suspects:', error);

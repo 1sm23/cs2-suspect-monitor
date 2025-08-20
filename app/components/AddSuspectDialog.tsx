@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/app/components/ui/InputWrapper';
 import { useTranslations } from '@/lib/i18n';
 import { authManager } from '@/lib/auth-manager';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -109,9 +110,18 @@ export function AddSuspectDialog({ open, onOpenChange, onSuspectAdded }: AddSusp
         resetForm();
         onOpenChange(false);
         onSuspectAdded();
+        toast.success(t("suspects.messages.added_success"));
       } else {
         const data = await response.json();
-        setError(data.error || t('common.error'));
+        
+        // 特殊处理重复用户错误
+        if (response.status === 409) {
+          setError('该Steam用户已在监控列表中，请勿重复添加');
+        } else if (response.status === 404) {
+          setError('未找到该Steam用户，请检查Steam ID是否正确');
+        } else {
+          setError(data.error || t('common.error'));
+        }
       }
     } catch (error) {
       console.error('Failed to add suspect:', error);

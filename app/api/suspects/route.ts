@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
             avatar_url: steamPlayer?.avatarfull || steamPlayer?.avatarmedium || steamPlayer?.avatar || undefined,
             vac_banned: steamBan?.VACBanned || false,
             game_ban_count: steamBan?.NumberOfGameBans || 0,
-            last_logoff: steamPlayer?.lastlogoff ? new Date(steamPlayer.lastlogoff * 1000).toISOString() : undefined
+            last_logoff: steamPlayer?.lastlogoff ? Number(steamPlayer.lastlogoff) : undefined
           };
         });
 
@@ -144,12 +144,20 @@ export async function POST(request: Request) {
       game_ban_count: steamBan?.NumberOfGameBans || 0,
       current_gameid: steamPlayer?.gameid ? parseInt(steamPlayer.gameid) : undefined,
       game_server_ip: steamPlayer?.gameserverip || undefined,
-      last_logoff: steamPlayer?.lastlogoff ? new Date(steamPlayer.lastlogoff * 1000).toISOString() : undefined
+      last_logoff: steamPlayer?.lastlogoff ? Number(steamPlayer.lastlogoff) : undefined
     });
 
     return Response.json(newSuspect);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create suspect:', error);
+    
+    // 检查是否是重复键错误
+    if (error.code === '23505' && error.constraint === 'suspects_steam_id_key') {
+      return Response.json({ 
+        error: 'This Steam user is already being monitored' 
+      }, { status: 409 });
+    }
+    
     return Response.json({ error: 'Failed to create suspect' }, { status: 500 });
   }
 }

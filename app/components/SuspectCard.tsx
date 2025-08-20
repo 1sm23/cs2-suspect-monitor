@@ -66,8 +66,8 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
   };
 
   return (
-    <div className="bg-card rounded-lg shadow-md p-6 border border-border">
-      <div className="flex items-start space-x-4">
+    <div className="bg-card rounded-lg shadow-md p-6 border border-border h-full flex flex-col">
+      <div className="flex items-start space-x-4 flex-1">
         <Image
           src={imageError || !suspect.avatar_url ? '/avatar_placeholder.svg' : suspect.avatar_url}
           alt={suspect.personaname || suspect.steam_id}
@@ -77,76 +77,78 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
           onError={handleImageError}
           unoptimized={imageError || !suspect.avatar_url}
         />
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-foreground truncate">
-            {displayName()}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-2">{suspect.steam_id}</p>
-          
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <StatusBadge status={suspect.status} />
-            <VACBadge 
-              vacBanned={suspect.vac_banned || false} 
-              gameBanCount={suspect.game_ban_count || 0} 
-            />
-            <CS2StatusBadge 
-              currentGameId={suspect.current_gameid} 
-              gameServerIp={suspect.game_server_ip}
-            />
-            <Badge 
-              variant={suspect.category === 'confirmed' ? 'destructive' : 'secondary'}
-              className={
-                suspect.category === 'confirmed' ? '' : 
-                suspect.category === 'high_risk' ? 'bg-orange-500 text-white hover:bg-orange-600' : 
-                'bg-yellow-500 text-white hover:bg-yellow-600'
-              }
-            >
-              {t(`suspects.category.${suspect.category}` as any)}
-            </Badge>
-          </div>
+        <div className="flex-1 min-w-0 flex flex-col h-full">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-foreground truncate">
+              {displayName()}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-2">{suspect.steam_id}</p>
+            
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <StatusBadge status={suspect.status} />
+              <VACBadge 
+                vacBanned={suspect.vac_banned || false} 
+                gameBanCount={suspect.game_ban_count || 0} 
+              />
+              <CS2StatusBadge 
+                currentGameId={suspect.current_gameid} 
+                gameServerIp={suspect.game_server_ip}
+              />
+              <Badge 
+                variant={suspect.category === 'confirmed' ? 'destructive' : 'secondary'}
+                className={
+                  suspect.category === 'confirmed' ? '' : 
+                  suspect.category === 'high_risk' ? 'bg-orange-500 text-white hover:bg-orange-600' : 
+                  'bg-yellow-500 text-white hover:bg-yellow-600'
+                }
+              >
+                {t(`suspects.category.${suspect.category}` as any)}
+              </Badge>
+            </div>
 
-          {/* <div className="mb-3">
-            <div className="text-sm text-gray-600">{t('suspects.category_label')}:</div>
-            <Badge 
-              variant={suspect.category === 'confirmed' ? 'destructive' : 'secondary'}
-              className={
-                suspect.category === 'confirmed' ? '' : 
-                suspect.category === 'high_risk' ? 'bg-orange-500 text-white hover:bg-orange-600' : 
-                'bg-yellow-500 text-white hover:bg-yellow-600'
-              }
-            >
-              {t(`suspects.category.${suspect.category}` as any)}
-            </Badge>
-          </div> */}
-          
-          <div className="text-xs text-muted-foreground space-y-1 mb-3">
-            {/* {suspect.last_checked && (
-              <div>
-                {t('suspects.last_checked')}: {new Date(suspect.last_checked + 'Z').toLocaleString('zh-CN', {
-                  timeZone: 'Asia/Shanghai',
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-            )} */}
-            {suspect.last_logoff && (
-              <div>
-                {t('suspects.last_logoff')}: {new Date(suspect.last_logoff * 1000).toLocaleString('zh-CN', {
-                  timeZone: 'Asia/Shanghai',
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-            )}
+            {/* <div className="mb-3">
+              <div className="text-sm text-gray-600">{t('suspects.category_label')}:</div>
+              <Badge 
+                variant={suspect.category === 'confirmed' ? 'destructive' : 'secondary'}
+                className={
+                  suspect.category === 'confirmed' ? '' : 
+                  suspect.category === 'high_risk' ? 'bg-orange-500 text-white hover:bg-orange-600' : 
+                  'bg-yellow-500 text-white hover:bg-yellow-600'
+                }
+              >
+                {t(`suspects.category.${suspect.category}` as any)}
+              </Badge>
+            </div> */}
+            
+            <div className="text-xs text-muted-foreground space-y-1 mb-3">
+              {/* {suspect.last_checked && (
+                <div>
+                  {t('suspects.last_checked')}: {new Date(suspect.last_checked + 'Z').toLocaleString('zh-CN', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+              )} */}
+              {suspect.last_logoff && (
+                <div>
+                  {t('suspects.last_logoff')}: {new Date(suspect.last_logoff * 1000).toLocaleString('zh-CN', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 mt-auto pt-2">
             <Button
               onClick={() => setEditDialogOpen(true)}
               variant="outline"

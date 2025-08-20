@@ -46,6 +46,18 @@
       "confirmed": "Confirmed",
       "high_risk": "High Risk",
       "suspected": "Suspected"
+    },
+    "messages": {
+      "added_success": "Suspect added successfully",
+      "updated_success": "Suspect updated successfully",
+      "deleted_success": "Suspect deleted successfully",
+      "loaded_success": "Suspects loaded successfully",
+      "refreshed_success": "Data refreshed successfully",
+      "add_failed": "Failed to add suspect",
+      "update_failed": "Failed to update suspect",
+      "delete_failed": "Failed to delete suspect",
+      "load_failed": "Failed to load suspects",
+      "refresh_failed": "Failed to refresh data"
     }
   },
   "evidence": {

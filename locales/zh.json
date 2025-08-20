@@ -46,7 +46,19 @@
     "filter_options": "筛选选项",
     "filter_online": "在线",
     "filter_game_launched": "已启动 CS2",
-    "filter_in_game": "正在游戏中"
+    "filter_in_game": "正在游戏中",
+    "messages": {
+      "added_success": "嫌疑人添加成功",
+      "updated_success": "嫌疑人更新成功",
+      "deleted_success": "嫌疑人删除成功",
+      "loaded_success": "嫌疑人列表加载成功",
+      "refreshed_success": "数据刷新成功",
+      "add_failed": "添加嫌疑人失败",
+      "update_failed": "更新嫌疑人失败",
+      "delete_failed": "删除嫌疑人失败",
+      "load_failed": "加载嫌疑人列表失败",
+      "refresh_failed": "刷新数据失败"
+    }
   },
   "evidence": {
     "title": "证据",

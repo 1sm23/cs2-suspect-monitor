@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Suspect } from '@/lib/types';
-import { useTranslations } from '@/lib/i18n';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { authManager } from '@/lib/auth-manager';
+import { useState } from "react";
+import { Suspect } from "@/lib/types";
+import { useTranslations } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { authManager } from "@/lib/auth-manager";
 import {
   Dialog,
   DialogContent,
@@ -34,11 +35,13 @@ export function EditSuspectDialog({
   open,
   onOpenChange,
   suspect,
-  onSuspectUpdated
+  onSuspectUpdated,
 }: EditSuspectDialogProps) {
   const t = useTranslations();
-  const [nickname, setNickname] = useState(suspect.nickname || '');
-  const [category, setCategory] = useState<'suspected' | 'high_risk' | 'confirmed'>(suspect.category);
+  const [nickname, setNickname] = useState(suspect.nickname || "");
+  const [category, setCategory] = useState<
+    "suspected" | "high_risk" | "confirmed"
+  >(suspect.category);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,27 +49,31 @@ export function EditSuspectDialog({
     setIsLoading(true);
 
     try {
-      const response = await authManager.authenticatedFetch(`/api/suspects?id=${suspect.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nickname: nickname || null,
-          category,
-        }),
-      });
+      const response = await authManager.authenticatedFetch(
+        `/api/suspects?id=${suspect.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nickname: nickname || null,
+            category,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to update suspect');
+        throw new Error("Failed to update suspect");
       }
 
       const updatedSuspect = await response.json();
       onSuspectUpdated(updatedSuspect);
       onOpenChange(false);
+      toast.success(t("suspects.messages.updated_success"));
     } catch (error) {
-      console.error('Failed to update suspect:', error);
-      alert('Failed to update suspect');
+      console.error("Failed to update suspect:", error);
+      toast.error(t("suspects.messages.update_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -76,9 +83,9 @@ export function EditSuspectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t('suspects.edit_title' as any)}</DialogTitle>
+          <DialogTitle>{t("suspects.edit_title" as any)}</DialogTitle>
           <DialogDescription>
-            {t('suspects.edit_description' as any)}
+            {t("suspects.edit_description" as any)}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -95,45 +102,53 @@ export function EditSuspectDialog({
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="personaname" className="text-right whitespace-nowrap">
-                {t('suspects.personaname' as any)}
+              <Label
+                htmlFor="personaname"
+                className="text-right whitespace-nowrap"
+              >
+                {t("suspects.personaname" as any)}
               </Label>
               <Input
                 id="personaname"
-                value={suspect.personaname || ''}
+                value={suspect.personaname || ""}
                 className="col-span-3"
                 disabled
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="nickname" className="text-right">
-                {t('suspects.nickname')}
+                {t("suspects.nickname")}
               </Label>
               <Input
                 id="nickname"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 className="col-span-3"
-                placeholder={t('suspects.nickname_placeholder')}
+                placeholder={t("suspects.nickname_placeholder")}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category" className="text-right">
-                {t('suspects.category_label')}
+                {t("suspects.category_label")}
               </Label>
-              <Select value={category} onValueChange={(value: 'suspected' | 'high_risk' | 'confirmed') => setCategory(value)}>
+              <Select
+                value={category}
+                onValueChange={(
+                  value: "suspected" | "high_risk" | "confirmed"
+                ) => setCategory(value)}
+              >
                 <SelectTrigger className="col-span-3">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="suspected">
-                    {t('suspects.category.suspected')}
+                    {t("suspects.category.suspected")}
                   </SelectItem>
                   <SelectItem value="high_risk">
-                    {t('suspects.category.high_risk')}
+                    {t("suspects.category.high_risk")}
                   </SelectItem>
                   <SelectItem value="confirmed">
-                    {t('suspects.category.confirmed')}
+                    {t("suspects.category.confirmed")}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -146,10 +161,10 @@ export function EditSuspectDialog({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              {t('common.cancel')}
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? t('common.saving') : t('common.save')}
+              {isLoading ? t("common.saving") : t("common.save")}
             </Button>
           </DialogFooter>
         </form>
