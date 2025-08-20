@@ -2,20 +2,20 @@ export interface Suspect {
   id: number;
   steam_id: string;
   nickname: string | null;
-  personaname: string | null;
-  category: 'confirmed' | 'high_risk' | 'suspected';
+  category: string;
   profile_url: string | null;
   avatar_url: string | null;
-  status: 'online' | 'offline' | 'private' | 'banned' | 'unknown';
+  status: string;
   vac_banned: boolean;
   game_ban_count: number;
-  ban_details: string | null; // 存储从个人资料页面爬取的封禁详情
   current_gameid: number | null;
   game_server_ip: string | null;
   last_logoff: number | null;
-  last_checked: string | null;
+  last_checked: string;
   created_at: string;
   updated_at: string;
+  personaname: string | null;
+  ban_details: string | null;
 }
 
 export interface Evidence {

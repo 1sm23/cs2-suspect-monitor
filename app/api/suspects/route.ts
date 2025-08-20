@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
             current_gameid: steamPlayer?.gameid ? parseInt(steamPlayer.gameid) : undefined,
             game_server_ip: steamPlayer?.gameserverip || undefined,
             personaname: steamPlayer?.personaname || undefined,
+            avatar_url: steamPlayer?.avatarfull || steamPlayer?.avatarmedium || steamPlayer?.avatar || undefined,
             vac_banned: steamBan?.VACBanned || false,
             game_ban_count: steamBan?.NumberOfGameBans || 0,
             last_logoff: steamPlayer?.lastlogoff ? new Date(steamPlayer.lastlogoff * 1000).toISOString() : undefined
