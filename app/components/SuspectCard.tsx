@@ -6,6 +6,7 @@ import { Suspect } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
 import { VACBadge } from './VACBadge';
 import { CS2StatusBadge } from './CS2StatusBadge';
+import { PrivacyBadge } from './PrivacyBadge';
 import { EditSuspectDialog } from './EditSuspectDialog';
 import { useTranslations } from '@/lib/i18n';
 import { useState } from 'react';
@@ -81,19 +82,27 @@ export function SuspectCard({ suspect, onDelete, onUpdate }: SuspectCardProps) {
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border h-full flex flex-col">
       <div className="flex items-start space-x-4 flex-1">
-        <Image
-          src={
-            imageError || !suspect.avatar_url
-              ? '/avatar_placeholder.svg'
-              : suspect.avatar_url
-          }
-          alt={suspect.personaname || suspect.steam_id}
-          width={64}
-          height={64}
-          className="rounded-full flex-shrink-0 select-none"
-          onError={handleImageError}
-          unoptimized={imageError || !suspect.avatar_url}
-        />
+        <div className="relative flex-shrink-0">
+          <Image
+            src={
+              imageError || !suspect.avatar_url
+                ? '/avatar_placeholder.svg'
+                : suspect.avatar_url
+            }
+            alt={suspect.personaname || suspect.steam_id}
+            width={64}
+            height={64}
+            className="rounded-full select-none"
+            onError={handleImageError}
+            unoptimized={imageError || !suspect.avatar_url}
+          />
+          {/* 私密徽章固定在头像右下角 */}
+          <div className="absolute -bottom-1 -right-1">
+            <PrivacyBadge
+              communityvisibilitystate={suspect.communityvisibilitystate || 3}
+            />
+          </div>
+        </div>
         <div className="flex-1 min-w-0 flex flex-col h-full">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-foreground truncate">

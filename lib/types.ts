@@ -16,6 +16,7 @@ export interface Suspect {
   updated_at: string;
   personaname: string | null;
   ban_details: string | null;
+  communityvisibilitystate: number;
 }
 
 export interface Evidence {

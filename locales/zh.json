@@ -30,6 +30,10 @@
     "playing_cs2_in_game": "正在游戏中",
     "playing_cs2_on_server": "正在服务器上游玩 CS2",
     "category_label": "类别",
+    "private": "私密",
+    "private_profile": "私密Steam账户",
+    "private_account_warning": "这是一个私密Steam账户，可获取的信息有限。",
+    "add_private_confirm": "添加私密账户",
     "category": {
       "confirmed": "实锤",
       "high_risk": "高风险",

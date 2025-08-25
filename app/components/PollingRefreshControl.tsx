@@ -26,7 +26,7 @@ export function PollingRefreshControl({
 
     if (autoRefresh) {
       intervalId = setInterval(() => {
-        handleRefresh();
+        handleRefresh(); // 自动刷新
       }, interval);
 
       countdownId = setInterval(() => {

@@ -42,6 +42,8 @@ export function AddSuspectDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [inputHelp, setInputHelp] = useState('');
+  const [showPrivateConfirm, setShowPrivateConfirm] = useState(false);
+  const [privateAccountData, setPrivateAccountData] = useState<any>(null);
   const t = useTranslations();
 
   // 提取Steam ID的函数
@@ -93,9 +95,11 @@ export function AddSuspectDialog({
     setCategory('confirmed');
     setError('');
     setInputHelp('');
+    setShowPrivateConfirm(false);
+    setPrivateAccountData(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, forceAddPrivate = false) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -119,10 +123,21 @@ export function AddSuspectDialog({
           steam_id: finalSteamId,
           nickname: nickname || null,
           category,
+          force_add_private: forceAddPrivate,
         }),
       });
 
       if (response.ok) {
+        const data = await response.json();
+        
+        // 检查是否为私密账户
+        if (data.isPrivate && !forceAddPrivate) {
+          setPrivateAccountData(data);
+          setShowPrivateConfirm(true);
+          setIsLoading(false);
+          return;
+        }
+        
         resetForm();
         onOpenChange(false);
         onSuspectAdded();
@@ -152,93 +167,155 @@ export function AddSuspectDialog({
     onOpenChange(false);
   };
 
+  const handleConfirmPrivate = async () => {
+    // 创建一个虚拟事件对象
+    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+    await handleSubmit(fakeEvent, true);
+  };
+
+  const handleCancelPrivate = () => {
+    setShowPrivateConfirm(false);
+    setPrivateAccountData(null);
+    setIsLoading(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{t('suspects.add_title')}</DialogTitle>
-          {/* <DialogDescription>
-            {t("suspects.steam_id")} 或 Steam profile URL
-          </DialogDescription> */}
-        </DialogHeader>
+        {!showPrivateConfirm ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>{t('suspects.add_title')}</DialogTitle>
+            </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label={`${t('suspects.steam_id')} *`}
-            type="text"
-            id="steamInput"
-            value={steamInput}
-            onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={`76561198358372020 ${t(
-              'common.or'
-            )} https://steamcommunity.com/profiles/76561198358372020/`}
-            helperText={inputHelp || t('suspects.steam_id_helper')}
-            required
-            disabled={isLoading}
-          />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                label={`${t('suspects.steam_id')} *`}
+                type="text"
+                id="steamInput"
+                value={steamInput}
+                onChange={(e) => handleInputChange(e.target.value)}
+                placeholder={`76561198358372020 ${t(
+                  'common.or'
+                )} https://steamcommunity.com/profiles/76561198358372020/`}
+                helperText={inputHelp || t('suspects.steam_id_helper')}
+                required
+                disabled={isLoading}
+              />
 
-          <Input
-            label={`${t('suspects.nickname')} (Optional)`}
-            type="text"
-            id="nickname"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="Custom nickname"
-            helperText={t('suspects.nickname_placeholder')}
-            disabled={isLoading}
-          />
+              <Input
+                label={`${t('suspects.nickname')} (Optional)`}
+                type="text"
+                id="nickname"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="Custom nickname"
+                helperText={t('suspects.nickname_placeholder')}
+                disabled={isLoading}
+              />
 
-          <div>
-            <Label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              {t('suspects.category_label')}
-            </Label>
-            <Select
-              value={category}
-              onValueChange={(value: 'suspected' | 'high_risk' | 'confirmed') =>
-                setCategory(value)
-              }
-              disabled={isLoading}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="suspected">
-                  {t('suspects.category.suspected')}
-                </SelectItem>
-                <SelectItem value="high_risk">
-                  {t('suspects.category.high_risk')}
-                </SelectItem>
-                <SelectItem value="confirmed">
-                  {t('suspects.category.confirmed')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              <div>
+                <Label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t('suspects.category_label')}
+                </Label>
+                <Select
+                  value={category}
+                  onValueChange={(value: 'suspected' | 'high_risk' | 'confirmed') =>
+                    setCategory(value)
+                  }
+                  disabled={isLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="suspected">
+                      {t('suspects.category.suspected')}
+                    </SelectItem>
+                    <SelectItem value="high_risk">
+                      {t('suspects.category.high_risk')}
+                    </SelectItem>
+                    <SelectItem value="confirmed">
+                      {t('suspects.category.confirmed')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-800">{error}</div>
+              {error && (
+                <div className="rounded-md bg-red-50 p-4">
+                  <div className="text-sm text-red-800">{error}</div>
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? t('common.loading') : t('suspects.add_button')}
+                </Button>
+              </DialogFooter>
+            </form>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>{t('suspects.private_profile')}</DialogTitle>
+              <DialogDescription>
+                {t('suspects.private_account_warning')}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {privateAccountData?.steamData && (
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {privateAccountData.steamData.avatarfull && (
+                    <img
+                      src={privateAccountData.steamData.avatarfull}
+                      alt="Avatar"
+                      className="w-12 h-12 rounded-full"
+                    />
+                  )}
+                  <div>
+                    <div className="font-medium">
+                      {privateAccountData.steamData.personaname || 'Private Profile'}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {privateAccountData.steamData.steamid}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-sm text-gray-600">
+                {privateAccountData?.message}
+              </div>
             </div>
-          )}
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isLoading}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? t('common.loading') : t('suspects.add_button')}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelPrivate}
+                disabled={isLoading}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button onClick={handleConfirmPrivate} disabled={isLoading}>
+                {isLoading ? t('common.loading') : t('suspects.add_private_confirm')}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -43,6 +43,10 @@
     "filter_in_game": "In Game Only",
     "category_label": "Category",
     "steam_id_helper": "Please enter a 17-digit Steam ID or Steam profile URL.",
+    "private": "Private",
+    "private_profile": "Private Steam Profile",
+    "private_account_warning": "This is a private Steam account. Limited information will be available.",
+    "add_private_confirm": "Add Private Account",
     "category": {
       "confirmed": "Confirmed",
       "high_risk": "High Risk",

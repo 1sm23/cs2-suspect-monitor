@@ -92,6 +92,7 @@ export default function SuspectsPage() {
       if (response.ok) {
         const data = await response.json();
         setSuspects(data);
+        
         // 只在非首次加载时显示成功提示
         if (!loading) {
           toast.success(t('suspects.messages.loaded_success'));

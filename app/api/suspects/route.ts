@@ -8,7 +8,6 @@ import {
   updateSuspect,
 } from '@/lib/db';
 import { getSteamPlayerSummaries, getSteamPlayerBans } from '@/lib/steam';
-import { steamCache } from '@/lib/steam-cache';
 import type { Suspect } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
@@ -34,7 +33,7 @@ export async function GET(request: NextRequest) {
       in_game: filterInGame,
     });
 
-    // 如果没有筛选条件，更新 Steam 数据
+    // 总是更新 Steam 数据（如果没有筛选条件）
     if (
       suspects.length > 0 &&
       !filterOnline &&
@@ -42,78 +41,67 @@ export async function GET(request: NextRequest) {
       !filterInGame
     ) {
       const steamIdArray = suspects.map((s: Suspect) => s.steam_id);
-      const steamIds = steamIdArray.join(',');
-      const cacheKey = `steam_data_${steamIds}`;
 
-      let steamData = steamCache.get(cacheKey);
-      let steamBanData = steamCache.get(`steam_bans_${steamIds}`);
+      console.log(
+        '🔄 Calling Steam API for',
+        suspects.length,
+        'suspects (no cache)'
+      );
 
-      if (!steamData || !steamBanData) {
-        console.log(
-          '🔄 Cache miss - calling Steam API for',
-          suspects.length,
-          'suspects'
-        );
+      try {
+        const steamData = await getSteamPlayerSummaries(steamIdArray);
+        const steamBanData = await getSteamPlayerBans(steamIdArray);
 
-        steamData = await getSteamPlayerSummaries(steamIdArray);
-        steamBanData = await getSteamPlayerBans(steamIdArray);
+        if (steamData && steamData.length > 0 && steamBanData && steamBanData.length > 0) {
+          console.log('✅ Steam API call successful');
 
-        steamCache.set(cacheKey, steamData, 300);
-        steamCache.set(`steam_bans_${steamIds}`, steamBanData, 300);
-      } else {
-        console.log('✅ Cache hit - using cached Steam data');
+          const updates = suspects.map((suspect: Suspect) => {
+            const steamPlayer = steamData.find(
+              (p: any) => p.steamid === suspect.steam_id
+            );
+            const steamBan = steamBanData.find(
+              (p: any) => p.SteamId === suspect.steam_id
+            );
+
+            return {
+              steam_id: suspect.steam_id,
+              status:
+                steamPlayer?.personastate !== undefined
+                  ? getStatusFromPersonaState(steamPlayer.personastate)
+                  : 'unknown',
+              current_gameid: steamPlayer?.gameid
+                ? parseInt(steamPlayer.gameid)
+                : undefined,
+              game_server_ip: steamPlayer?.gameserverip || undefined,
+              personaname: steamPlayer?.personaname || undefined,
+              avatar_url:
+                steamPlayer?.avatarfull ||
+                steamPlayer?.avatarmedium ||
+                steamPlayer?.avatar ||
+                undefined,
+              vac_banned: steamBan?.VACBanned || false,
+              game_ban_count: steamBan?.NumberOfGameBans || 0,
+              last_logoff: steamPlayer?.lastlogoff
+                ? Number(steamPlayer.lastlogoff)
+                : undefined,
+              communityvisibilitystate: steamPlayer?.communityvisibilitystate || 3,
+            };
+          });
+
+          await updateSuspectsBatch(updates);
+
+          // 重新获取更新后的数据
+          const updatedSuspects = await getAllSuspects({
+            online: filterOnline,
+            cs2_launched: filterCS2Launched,
+            in_game: filterInGame,
+          });
+
+          return Response.json(updatedSuspects);
+        }
+      } catch (error) {
+        console.error('Steam API call failed:', error);
       }
-
-      // 批量更新数据库
-      if (
-        steamData &&
-        steamData.length > 0 &&
-        steamBanData &&
-        steamBanData.length > 0
-      ) {
-        const updates = suspects.map((suspect: Suspect) => {
-          const steamPlayer = steamData.find(
-            (p: any) => p.steamid === suspect.steam_id
-          );
-          const steamBan = steamBanData.find(
-            (p: any) => p.SteamId === suspect.steam_id
-          );
-
-          return {
-            steam_id: suspect.steam_id,
-            status:
-              steamPlayer?.personastate !== undefined
-                ? getStatusFromPersonaState(steamPlayer.personastate)
-                : 'unknown',
-            current_gameid: steamPlayer?.gameid
-              ? parseInt(steamPlayer.gameid)
-              : undefined,
-            game_server_ip: steamPlayer?.gameserverip || undefined,
-            personaname: steamPlayer?.personaname || undefined,
-            avatar_url:
-              steamPlayer?.avatarfull ||
-              steamPlayer?.avatarmedium ||
-              steamPlayer?.avatar ||
-              undefined,
-            vac_banned: steamBan?.VACBanned || false,
-            game_ban_count: steamBan?.NumberOfGameBans || 0,
-            last_logoff: steamPlayer?.lastlogoff
-              ? Number(steamPlayer.lastlogoff)
-              : undefined,
-          };
-        });
-
-        await updateSuspectsBatch(updates);
-      }
-
-      // 重新获取更新后的数据
-      const updatedSuspects = await getAllSuspects({
-        online: filterOnline,
-        cs2_launched: filterCS2Launched,
-        in_game: filterInGame,
-      });
-
-      return Response.json(updatedSuspects);
     }
 
     return Response.json(suspects);
@@ -132,7 +120,7 @@ export async function POST(request: Request) {
     await initDatabase();
 
     const body = await request.json();
-    const { steam_id, nickname, category } = body;
+    const { steam_id, nickname, category, force_add_private } = body;
 
     // 验证必需的字段
     if (!steam_id) {
@@ -160,6 +148,23 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Steam user not found' }, { status: 404 });
     }
 
+    // 检查是否为私密账户
+    const isPrivate = steamPlayer?.communityvisibilitystate === 1;
+    
+    if (isPrivate && !force_add_private) {
+      // 返回私密账户信息，让前端决定是否继续添加
+      return Response.json({
+        isPrivate: true,
+        steamData: {
+          steamid: extractedSteamId,
+          personaname: steamPlayer?.personaname || 'Private Profile',
+          avatarfull: steamPlayer?.avatarfull || undefined,
+          communityvisibilitystate: steamPlayer?.communityvisibilitystate || 1,
+        },
+        message: 'This is a private Steam profile. Do you want to add it anyway?'
+      }, { status: 200 });
+    }
+
     // 添加到数据库
     const newSuspect = await addSuspect({
       steam_id: extractedSteamId,
@@ -180,6 +185,7 @@ export async function POST(request: Request) {
       last_logoff: steamPlayer?.lastlogoff
         ? Number(steamPlayer.lastlogoff)
         : undefined,
+      communityvisibilitystate: steamPlayer?.communityvisibilitystate || 3,
     });
 
     return Response.json(newSuspect);

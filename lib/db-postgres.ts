@@ -41,9 +41,24 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         personaname TEXT DEFAULT NULL,
-        ban_details TEXT DEFAULT NULL
+        ban_details TEXT DEFAULT NULL,
+        communityvisibilitystate INTEGER DEFAULT 3
       )
     `;
+
+    // 添加 communityvisibilitystate 字段（如果表已存在但没有该字段）
+    try {
+      await sql`ALTER TABLE suspects ADD COLUMN communityvisibilitystate INTEGER DEFAULT 3`;
+    } catch (error) {
+      // 字段已存在，忽略错误
+    }
+
+    // 如果有旧的 is_private 字段，可以选择性地删除
+    try {
+      await sql`ALTER TABLE suspects DROP COLUMN IF EXISTS is_private`;
+    } catch (error) {
+      // 忽略错误
+    }
 
     // 创建索引
     await sql`CREATE INDEX IF NOT EXISTS idx_suspects_steam_id ON suspects(steam_id)`;

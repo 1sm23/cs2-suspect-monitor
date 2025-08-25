@@ -38,9 +38,18 @@ export function initDatabase() {
       ban_details TEXT DEFAULT NULL,
       last_logoff INTEGER DEFAULT NULL,
       last_checked DATETIME DEFAULT CURRENT_TIMESTAMP,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      is_private BOOLEAN DEFAULT 0
     )
   `);
+
+  // 添加 is_private 字段（如果表已存在但没有该字段）
+  try {
+    db.exec('ALTER TABLE suspects ADD COLUMN is_private BOOLEAN DEFAULT 0');
+  } catch (error) {
+    // 如果字段已存在，忽略错误
+    console.log('is_private column already exists or could not be added');
+  }
 
   // 创建索引以提高查询性能
   db.exec(`
