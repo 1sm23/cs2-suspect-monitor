@@ -15,6 +15,7 @@ import { Plus } from 'lucide-react';
 import { authManager } from '@/lib/auth-manager';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { SuspectService } from '@/lib/suspect-service';
 
 // 嫌疑人卡片骨架屏组件
 function SuspectCardSkeleton() {
@@ -64,12 +65,23 @@ export default function SuspectsPage() {
   const router = useRouter();
   const t = useTranslations();
 
-  // 客户端认证检查
+  // 客户端认证检查和数据库初始化
   useEffect(() => {
-    if (!authManager.isAuthenticated()) {
-      router.push('/login');
-      return;
-    }
+    const initialize = async () => {
+      if (!authManager.isAuthenticated()) {
+        router.push('/login');
+        return;
+      }
+
+      // 初始化数据库
+      const success = await SuspectService.initialize();
+      if (!success) {
+        setError('Failed to initialize database');
+        toast.error('数据库初始化失败');
+      }
+    };
+
+    initialize();
   }, [router]);
 
   const fetchSuspects = async (isFilter = false) => {
@@ -79,31 +91,24 @@ export default function SuspectsPage() {
       }
 
       // 构建筛选参数
-      const params = new URLSearchParams();
-      if (filterOnline) params.append('online', 'true');
-      if (filterGameLaunched) params.append('cs2_launched', 'true');
-      if (filterInGame) params.append('in_game', 'true');
+      const filters = {
+        online: filterOnline,
+        cs2_launched: filterGameLaunched,
+        in_game: filterInGame,
+      };
 
-      const url = `/api/suspects${params.toString() ? '?' + params.toString() : ''}`;
-
-      // 使用认证的fetch
-      const response = await authManager.authenticatedFetch(url);
-
-      if (response.ok) {
-        const data = await response.json();
-        setSuspects(data);
-        
-        // 只在非首次加载时显示成功提示
-        if (!loading) {
-          toast.success(t('suspects.messages.loaded_success'));
-        }
-      } else {
-        setError(t('common.error'));
-        toast.error(t('suspects.messages.load_failed'));
+      // 使用客户端服务获取数据
+      const data = await SuspectService.getAllSuspects(filters);
+      setSuspects(data);
+      
+      // 只在非首次加载时显示成功提示
+      if (!loading) {
+        toast.success(t('suspects.messages.loaded_success'));
       }
     } catch (error) {
       console.error('Failed to fetch suspects:', error);
       setError(t('common.error'));
+      toast.error(t('suspects.messages.load_failed'));
     } finally {
       setLoading(false);
       if (isFilter) {
@@ -126,14 +131,8 @@ export default function SuspectsPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await authManager.authenticatedFetch(
-        `/api/suspects?id=${id}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      if (response.ok) {
+      const success = await SuspectService.deleteSuspect(id);
+      if (success) {
         setSuspects(suspects.filter((s) => s.id !== id));
         toast.success(t('suspects.messages.deleted_success'));
       } else {
@@ -143,37 +142,41 @@ export default function SuspectsPage() {
     } catch (error) {
       console.error('Failed to delete suspect:', error);
       setError(t('common.error'));
+      toast.error(t('suspects.messages.delete_failed'));
     }
   };
 
   const handleRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
-      // 构建筛选参数，和 fetchSuspects 保持一致
-      const params = new URLSearchParams();
-      if (filterOnline) params.append('online', 'true');
-      if (filterGameLaunched) params.append('cs2_launched', 'true');
-      if (filterInGame) params.append('in_game', 'true');
-
-      const url = `/api/suspects${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await authManager.authenticatedFetch(url);
-
-      if (response.ok) {
-        const data = await response.json();
-        setSuspects(data);
-        setError('');
-        toast.success(t('suspects.messages.refreshed_success'));
-      } else {
-        setError(t('common.error'));
-        toast.error(t('suspects.messages.refresh_failed'));
+      
+      // 首先刷新Steam数据
+      if (suspects.length > 0) {
+        const refreshSuccess = await SuspectService.refreshSteamData(suspects);
+        if (!refreshSuccess) {
+          console.warn('Failed to refresh Steam data');
+        }
       }
+
+      // 然后重新获取本地数据
+      const filters = {
+        online: filterOnline,
+        cs2_launched: filterGameLaunched,
+        in_game: filterInGame,
+      };
+
+      const data = await SuspectService.getAllSuspects(filters);
+      setSuspects(data);
+      setError('');
+      toast.success(t('suspects.messages.refreshed_success'));
     } catch (error) {
-      console.error('Failed to fetch suspects:', error);
+      console.error('Failed to refresh suspects:', error);
       setError(t('common.error'));
+      toast.error(t('suspects.messages.refresh_failed'));
     } finally {
       setRefreshing(false);
     }
-  }, [filterOnline, filterGameLaunched, filterInGame, t]);
+  }, [suspects, filterOnline, filterGameLaunched, filterInGame, t]);
 
   const handleSuspectAdded = () => {
     fetchSuspects(); // 使用 fetchSuspects 保持筛选条件一致

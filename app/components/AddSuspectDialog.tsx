@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/app/components/ui/InputWrapper';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/lib/i18n';
-import { authManager } from '@/lib/auth-manager';
+import { SuspectService } from '@/lib/suspect-service';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -114,49 +114,38 @@ export function AddSuspectDialog({
     }
 
     try {
-      const response = await authManager.authenticatedFetch('/api/suspects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          steam_id: finalSteamId,
-          nickname: nickname || null,
-          category,
-          force_add_private: forceAddPrivate,
-        }),
+      const result = await SuspectService.addSuspect({
+        steam_id: finalSteamId,
+        nickname: nickname || undefined,
+        category,
+        force_add_private: forceAddPrivate,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        // 检查是否为私密账户
-        if (data.isPrivate && !forceAddPrivate) {
-          setPrivateAccountData(data);
-          setShowPrivateConfirm(true);
-          setIsLoading(false);
-          return;
-        }
-        
-        resetForm();
-        onOpenChange(false);
-        onSuspectAdded();
-        toast.success(t('suspects.messages.added_success'));
-      } else {
-        const data = await response.json();
-
-        // 特殊处理重复用户错误
-        if (response.status === 409) {
-          setError('该Steam用户已在监控列表中，请勿重复添加');
-        } else if (response.status === 404) {
-          setError('未找到该Steam用户，请检查Steam ID是否正确');
-        } else {
-          setError(data.error || t('common.error'));
-        }
+      // 检查是否为私密账户
+      if (result.isPrivate && !forceAddPrivate) {
+        setPrivateAccountData(result);
+        setShowPrivateConfirm(true);
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
+      
+      resetForm();
+      onOpenChange(false);
+      onSuspectAdded();
+      toast.success(t('suspects.messages.added_success'));
+    } catch (error: any) {
       console.error('Failed to add suspect:', error);
-      setError(t('common.error'));
+      
+      // 特殊处理重复用户错误
+      if (error.message?.includes('already exists') || error.message?.includes('duplicate')) {
+        setError('该Steam用户已在监控列表中，请勿重复添加');
+      } else if (error.message?.includes('Steam user not found')) {
+        setError('未找到该Steam用户，请检查Steam ID是否正确');
+      } else if (error.message?.includes('private')) {
+        setError('该Steam账户为私密账户，无法获取详细信息');
+      } else {
+        setError(error.message || '添加嫌疑人失败，请重试');
+      }
     } finally {
       setIsLoading(false);
     }

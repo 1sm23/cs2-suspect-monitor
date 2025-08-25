@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { authManager } from '@/lib/auth-manager';
+import { SuspectService } from '@/lib/suspect-service';
 import {
   Dialog,
   DialogContent,
@@ -49,25 +49,15 @@ export function EditSuspectDialog({
     setIsLoading(true);
 
     try {
-      const response = await authManager.authenticatedFetch(
-        `/api/suspects?id=${suspect.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            nickname: nickname || null,
-            category,
-          }),
-        }
-      );
+      const updatedSuspect = await SuspectService.updateSuspect(suspect.id, {
+        nickname: nickname || null,
+        category,
+      });
 
-      if (!response.ok) {
+      if (!updatedSuspect) {
         throw new Error('Failed to update suspect');
       }
 
-      const updatedSuspect = await response.json();
       onSuspectUpdated(updatedSuspect);
       onOpenChange(false);
       toast.success(t('suspects.messages.updated_success'));

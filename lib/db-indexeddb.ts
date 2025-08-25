@@ -23,6 +23,12 @@ const settingsStore = localforage.createInstance({
 
 // 初始化数据库
 export async function initDatabase() {
+  // 确保只在客户端执行
+  if (typeof window === 'undefined') {
+    console.warn('IndexedDB can only be initialized on the client side');
+    return false;
+  }
+
   try {
     // 检查是否是第一次运行，如果是则进行初始化
     const version = await settingsStore.getItem<string>('db_version');
@@ -50,6 +56,12 @@ export async function getAllSuspects(
     in_game?: boolean;
   } = {}
 ): Promise<Suspect[]> {
+  // 确保只在客户端执行
+  if (typeof window === 'undefined') {
+    console.warn('IndexedDB can only be accessed on the client side');
+    return [];
+  }
+
   try {
     const suspects: Suspect[] = [];
     
