@@ -30,14 +30,12 @@ export function NavigationBar() {
 
   const handleLogout = async () => {
     try {
-      // 清除本地token
-      authManager.removeToken();
-      // 可选：调用服务端logout（不需要认证）
-      await fetch('/api/auth', { method: 'DELETE' });
+      // 清除本地Steam API key
+      authManager.removeSteamApiKey();
       router.push('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      // 即使服务端调用失败，也要跳转到登录页
+      // 即使出错，也要跳转到登录页
       router.push('/login');
     }
   };

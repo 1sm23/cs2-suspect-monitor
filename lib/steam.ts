@@ -44,12 +44,23 @@ export function extractSteamIdFromUrl(input: string): string | null {
 }
 
 export async function getSteamPlayerSummaries(
-  steamIds: string[]
+  steamIds: string[],
+  apiKey?: string
 ): Promise<SteamPlayerSummary[]> {
-  const apiKey = process.env.STEAM_API_KEY;
+  let steamApiKey = apiKey;
+  
+  // 如果在客户端环境且未提供API密钥，尝试从localStorage获取
+  if (!steamApiKey && typeof window !== 'undefined') {
+    steamApiKey = localStorage.getItem('cs2_steam_api_key') || undefined;
+  }
+  
+  // 如果在服务器环境，使用环境变量
+  if (!steamApiKey && typeof window === 'undefined') {
+    steamApiKey = process.env.STEAM_API_KEY;
+  }
 
-  if (!apiKey) {
-    console.warn('STEAM_API_KEY is not configured, skipping Steam API call');
+  if (!steamApiKey) {
+    console.warn('Steam API key is not configured, skipping Steam API call');
     return [];
   }
 
@@ -57,7 +68,7 @@ export async function getSteamPlayerSummaries(
     return [];
   }
 
-  const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${steamIds.join(',')}`;
+  const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${steamApiKey}&steamids=${steamIds.join(',')}`;
 
   // 尝试多次请求，每次超时时间逐渐增加
   const timeouts = [3000, 5000, 8000]; // 3秒, 5秒, 8秒
@@ -120,13 +131,24 @@ export async function getSteamPlayerSummaries(
 }
 
 export async function getSteamPlayerBans(
-  steamIds: string[]
+  steamIds: string[],
+  apiKey?: string
 ): Promise<SteamPlayerBans[]> {
-  const apiKey = process.env.STEAM_API_KEY;
+  let steamApiKey = apiKey;
+  
+  // 如果在客户端环境且未提供API密钥，尝试从localStorage获取
+  if (!steamApiKey && typeof window !== 'undefined') {
+    steamApiKey = localStorage.getItem('cs2_steam_api_key') || undefined;
+  }
+  
+  // 如果在服务器环境，使用环境变量
+  if (!steamApiKey && typeof window === 'undefined') {
+    steamApiKey = process.env.STEAM_API_KEY;
+  }
 
-  if (!apiKey) {
+  if (!steamApiKey) {
     console.warn(
-      'STEAM_API_KEY is not configured, skipping Steam Player Bans API call'
+      'Steam API key is not configured, skipping Steam Player Bans API call'
     );
     return [];
   }
@@ -135,7 +157,7 @@ export async function getSteamPlayerBans(
     return [];
   }
 
-  const url = `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${apiKey}&steamids=${steamIds.join(',')}`;
+  const url = `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${steamApiKey}&steamids=${steamIds.join(',')}`;
 
   // 尝试多次请求，每次超时时间逐渐增加
   const timeouts = [3000, 5000, 8000]; // 3秒, 5秒, 8秒

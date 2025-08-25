@@ -1,41 +1,41 @@
 // 客户端认证管理
 class AuthManager {
-  private tokenKey = 'cs2_auth_token';
+  private apiKeyKey = 'cs2_steam_api_key';
 
-  // 保存 token
-  setToken(token: string): void {
+  // 保存 Steam API Key
+  setSteamApiKey(apiKey: string): void {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(this.tokenKey, token);
+      localStorage.setItem(this.apiKeyKey, apiKey);
     }
   }
 
-  // 获取 token
-  getToken(): string | null {
+  // 获取 Steam API Key
+  getSteamApiKey(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(this.tokenKey);
+      return localStorage.getItem(this.apiKeyKey);
     }
     return null;
   }
 
-  // 删除 token
-  removeToken(): void {
+  // 删除 Steam API Key
+  removeSteamApiKey(): void {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem(this.apiKeyKey);
     }
   }
 
-  // 检查是否已登录
+  // 检查是否已设置API密钥
   isAuthenticated(): boolean {
-    return this.getToken() !== null;
+    return this.getSteamApiKey() !== null;
   }
 
   // 获取认证头
   getAuthHeaders(isFileUpload: boolean = false): HeadersInit {
-    const token = this.getToken();
+    const apiKey = this.getSteamApiKey();
     const headers: HeadersInit = {};
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (apiKey) {
+      headers['X-Steam-API-Key'] = apiKey;
     }
 
     // 文件上传时不设置Content-Type，让浏览器自动设置
@@ -64,9 +64,8 @@ class AuthManager {
       headers,
     });
 
-    // 如果返回 401，清除 token 并重定向到登录页
-    if (response.status === 401) {
-      this.removeToken();
+    // 如果没有API密钥，重定向到登录页
+    if (!this.isAuthenticated()) {
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }

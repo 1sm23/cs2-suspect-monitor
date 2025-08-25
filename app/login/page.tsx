@@ -6,12 +6,12 @@ import { useTranslations } from '@/lib/i18n';
 import { Input } from '@/app/components/ui/InputWrapper';
 import { Button } from '@/components/ui/button';
 import { authManager } from '@/lib/auth-manager';
+import { ExternalLink } from 'lucide-react';
 
 export default function LoginPage() {
-  const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const t = useTranslations();
 
@@ -21,33 +21,51 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // 设置token到localStorage
-        authManager.setToken(data.token);
-
-        // 延迟一下确保token已保存，然后强制刷新页面让middleware重新检查
-        setTimeout(() => {
-          window.location.href = '/suspects';
-        }, 100);
-      } else {
-        const data = await response.json();
-        setError(data.error || t('auth.invalid_password'));
+      // 验证API密钥格式（Steam API密钥通常是32位十六进制字符）
+      if (!apiKey.trim()) {
+        setError('请输入Steam Web API密钥');
+        return;
       }
+
+      if (!/^[A-Fa-f0-9]{32}$/.test(apiKey.trim())) {
+        setError('Steam Web API密钥格式不正确（应为32位十六进制字符）');
+        return;
+      }
+
+      // 测试API密钥是否有效（调用一个简单的Steam API）
+      const testUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey.trim()}&steamids=76561197960435530`;
+      
+      try {
+        const response = await fetch(testUrl);
+        if (!response.ok) {
+          throw new Error('API key test failed');
+        }
+        const data = await response.json();
+        if (!data.response) {
+          throw new Error('Invalid API response');
+        }
+      } catch (testError) {
+        setError('Steam Web API密钥无效或网络错误，请检查密钥是否正确');
+        return;
+      }
+
+      // 保存API密钥
+      authManager.setSteamApiKey(apiKey.trim());
+
+      // 延迟一下确保密钥已保存，然后跳转
+      setTimeout(() => {
+        window.location.href = '/suspects';
+      }, 100);
     } catch (error) {
-      console.error('Login error:', error);
-      setError(t('common.error'));
+      console.error('API key validation error:', error);
+      setError('验证Steam Web API密钥时出错');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openSteamApiPage = () => {
+    window.open('https://steamcommunity.com/dev/apikey', '_blank');
   };
 
   return (
@@ -58,68 +76,51 @@ export default function LoginPage() {
             {t('suspects.title')}
           </h2>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            {t('auth.login')}
+            请输入您的Steam Web API密钥
           </p>
         </div>
+
+        {/* 获取API密钥的指导 */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+            如何获取Steam Web API密钥：
+          </h3>
+          <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1 mb-3">
+            <li>1. 访问Steam开发者页面</li>
+            <li>2. 使用您的Steam账号登录</li>
+            <li>3. 填写域名（可以填写localhost）</li>
+            <li>4. 获取您的API密钥</li>
+          </ol>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={openSteamApiPage}
+            className="w-full"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            获取Steam Web API密钥
+          </Button>
+        </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                {t('auth.password')}
+            <div>
+              <label htmlFor="apiKey" className="sr-only">
+                Steam Web API密钥
               </label>
               <Input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
+                id="apiKey"
+                name="apiKey"
+                type="text"
                 required
-                placeholder={t('auth.password')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="请输入32位Steam Web API密钥"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
                 disabled={isLoading}
-                className="pr-10 rounded-md"
+                className="rounded-md font-mono text-sm"
+                maxLength={32}
               />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={isLoading}
-              >
-                {showPassword ? (
-                  <svg
-                    className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                )}
-              </button>
             </div>
           </div>
 
@@ -159,10 +160,15 @@ export default function LoginPage() {
                   ></path>
                 </svg>
               )}
-              {isLoading ? t('common.loading') : t('auth.login_button')}
+              {isLoading ? '验证中...' : '保存并继续'}
             </Button>
           </div>
         </form>
+
+        <div className="mt-4 text-xs text-muted-foreground text-center">
+          <p>您的API密钥将安全地存储在浏览器本地存储中</p>
+          <p>我们不会将您的API密钥发送到任何服务器</p>
+        </div>
       </div>
     </div>
   );

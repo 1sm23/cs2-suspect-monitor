@@ -1,27 +1,9 @@
-// 统一的数据库接口 - 根据环境自动选择使用 SQLite 或 PostgreSQL
+// 统一的数据库接口 - 使用 IndexedDB (客户端存储)
 
-// 检查数据库环境（PostgreSQL 或 SQLite）
-const isPostgreSQL =
-  process.env.DATABASE_URL &&
-  (process.env.DATABASE_URL.startsWith('postgresql://') ||
-    process.env.DATABASE_URL.startsWith('postgres://'));
-const isSQLite = !isPostgreSQL;
-
-// 调试信息
-console.log('🔍 数据库环境检测:');
-console.log('  DATABASE_URL:', process.env.DATABASE_URL ? 'exists' : 'not set');
-console.log('  isPostgreSQL:', isPostgreSQL);
-console.log('  isSQLite:', isSQLite);
-
-// 懒加载数据库模块
+// 动态导入 IndexedDB 模块
 async function getDb() {
-  if (isPostgreSQL) {
-    const postgresDb = await import('./db-postgres');
-    return { db: postgresDb, type: 'PostgreSQL Database' };
-  } else {
-    const sqliteDb = await import('./db-sqlite');
-    return { db: sqliteDb, type: 'SQLite' };
-  }
+  const indexedDbModule = await import('./db-indexeddb');
+  return { db: indexedDbModule, type: 'IndexedDB (客户端存储)' };
 }
 
 let dbCache: any = null;
