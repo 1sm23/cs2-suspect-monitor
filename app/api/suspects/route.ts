@@ -1,276 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getAllSuspects,
-  addSuspect,
-  initDatabase,
-  updateSuspectsBatch,
-  deleteSuspect,
-  updateSuspect,
-} from '@/lib/db';
-import { getSteamPlayerSummaries, getSteamPlayerBans } from '@/lib/steam';
-import type { Suspect } from '@/lib/types';
+
+// Legacy API route - now using client-side IndexedDB storage
+// This route is kept for backward compatibility but no longer functional
 
 export async function GET(request: NextRequest) {
-  try {
-    // 确保数据库已初始化
-    await initDatabase();
-
-    const url = new URL(request.url);
-    const filterOnline = url.searchParams.get('online') === 'true';
-    const filterCS2Launched = url.searchParams.get('cs2_launched') === 'true';
-    const filterInGame = url.searchParams.get('in_game') === 'true';
-
-    console.log('🔍 Fetching suspects with filters:', {
-      online: filterOnline,
-      cs2_launched: filterCS2Launched,
-      in_game: filterInGame,
-    });
-
-    // 获取嫌疑人列表
-    const suspects = await getAllSuspects({
-      online: filterOnline,
-      cs2_launched: filterCS2Launched,
-      in_game: filterInGame,
-    });
-
-    // 总是更新 Steam 数据（如果没有筛选条件）
-    if (
-      suspects.length > 0 &&
-      !filterOnline &&
-      !filterCS2Launched &&
-      !filterInGame
-    ) {
-      const steamIdArray = suspects.map((s: Suspect) => s.steam_id);
-
-      console.log(
-        '🔄 Calling Steam API for',
-        suspects.length,
-        'suspects (no cache)'
-      );
-
-      try {
-        const steamData = await getSteamPlayerSummaries(steamIdArray);
-        const steamBanData = await getSteamPlayerBans(steamIdArray);
-
-        if (steamData && steamData.length > 0 && steamBanData && steamBanData.length > 0) {
-          console.log('✅ Steam API call successful');
-
-          const updates = suspects.map((suspect: Suspect) => {
-            const steamPlayer = steamData.find(
-              (p: any) => p.steamid === suspect.steam_id
-            );
-            const steamBan = steamBanData.find(
-              (p: any) => p.SteamId === suspect.steam_id
-            );
-
-            return {
-              steam_id: suspect.steam_id,
-              status:
-                steamPlayer?.personastate !== undefined
-                  ? getStatusFromPersonaState(steamPlayer.personastate)
-                  : 'unknown',
-              current_gameid: steamPlayer?.gameid
-                ? parseInt(steamPlayer.gameid)
-                : undefined,
-              game_server_ip: steamPlayer?.gameserverip || undefined,
-              personaname: steamPlayer?.personaname || undefined,
-              avatar_url:
-                steamPlayer?.avatarfull ||
-                steamPlayer?.avatarmedium ||
-                steamPlayer?.avatar ||
-                undefined,
-              vac_banned: steamBan?.VACBanned || false,
-              game_ban_count: steamBan?.NumberOfGameBans || 0,
-              last_logoff: steamPlayer?.lastlogoff
-                ? Number(steamPlayer.lastlogoff)
-                : undefined,
-              communityvisibilitystate: steamPlayer?.communityvisibilitystate || 3,
-            };
-          });
-
-          await updateSuspectsBatch(updates);
-
-          // 重新获取更新后的数据
-          const updatedSuspects = await getAllSuspects({
-            online: filterOnline,
-            cs2_launched: filterCS2Launched,
-            in_game: filterInGame,
-          });
-
-          return Response.json(updatedSuspects);
-        }
-      } catch (error) {
-        console.error('Steam API call failed:', error);
-      }
-    }
-
-    return Response.json(suspects);
-  } catch (error) {
-    console.error('API Error:', error);
-    return Response.json(
-      { error: 'Failed to fetch suspects' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    message: 'This application now uses client-side IndexedDB storage. Please use the web interface.',
+    deprecated: true,
+    architecture: 'client-side'
+  }, { status: 200 });
 }
 
-export async function POST(request: Request) {
-  try {
-    // 确保数据库已初始化
-    await initDatabase();
-
-    const body = await request.json();
-    const { steam_id, nickname, category, force_add_private } = body;
-
-    // 验证必需的字段
-    if (!steam_id) {
-      return Response.json({ error: 'Steam ID is required' }, { status: 400 });
-    }
-
-    // Steam ID 提取逻辑保持不变...
-    let extractedSteamId = steam_id;
-
-    if (steam_id && steam_id.includes('steamcommunity.com')) {
-      const matches = steam_id.match(/(?:profiles|id)\/([^\/]+)/);
-      if (matches) {
-        extractedSteamId = matches[1];
-      }
-    }
-
-    // 获取 Steam 数据
-    const steamData = await getSteamPlayerSummaries([extractedSteamId]);
-    const steamBanData = await getSteamPlayerBans([extractedSteamId]);
-
-    const steamPlayer = steamData?.[0];
-    const steamBan = steamBanData?.[0];
-
-    if (!steamPlayer) {
-      return Response.json({ error: 'Steam user not found' }, { status: 404 });
-    }
-
-    // 检查是否为私密账户
-    const isPrivate = steamPlayer?.communityvisibilitystate === 1;
-    
-    if (isPrivate && !force_add_private) {
-      // 返回私密账户信息，让前端决定是否继续添加
-      return Response.json({
-        isPrivate: true,
-        steamData: {
-          steamid: extractedSteamId,
-          personaname: steamPlayer?.personaname || 'Private Profile',
-          avatarfull: steamPlayer?.avatarfull || undefined,
-          communityvisibilitystate: steamPlayer?.communityvisibilitystate || 1,
-        },
-        message: 'This is a private Steam profile. Do you want to add it anyway?'
-      }, { status: 200 });
-    }
-
-    // 添加到数据库
-    const newSuspect = await addSuspect({
-      steam_id: extractedSteamId,
-      nickname: nickname || undefined,
-      personaname: steamPlayer?.personaname || undefined,
-      category,
-      profile_url: steamPlayer?.profileurl || undefined,
-      avatar_url: steamPlayer?.avatarfull || undefined,
-      status: steamPlayer
-        ? getStatusFromPersonaState(steamPlayer.personastate)
-        : 'unknown',
-      vac_banned: steamBan?.VACBanned || false,
-      game_ban_count: steamBan?.NumberOfGameBans || 0,
-      current_gameid: steamPlayer?.gameid
-        ? parseInt(steamPlayer.gameid)
-        : undefined,
-      game_server_ip: steamPlayer?.gameserverip || undefined,
-      last_logoff: steamPlayer?.lastlogoff
-        ? Number(steamPlayer.lastlogoff)
-        : undefined,
-      communityvisibilitystate: steamPlayer?.communityvisibilitystate || 3,
-    });
-
-    return Response.json(newSuspect);
-  } catch (error: any) {
-    console.error('Failed to create suspect:', error);
-
-    // 检查是否是重复键错误
-    if (
-      error.code === '23505' &&
-      error.constraint === 'suspects_steam_id_key'
-    ) {
-      return Response.json(
-        {
-          error: 'This Steam user is already being monitored',
-        },
-        { status: 409 }
-      );
-    }
-
-    return Response.json(
-      { error: 'Failed to create suspect' },
-      { status: 500 }
-    );
-  }
-}
-
-function getStatusFromPersonaState(personastate: number): string {
-  const statusMap: { [key: number]: string } = {
-    0: 'offline',
-    1: 'online',
-    2: 'busy',
-    3: 'away',
-    4: 'snooze',
-    5: 'looking to trade',
-    6: 'looking to play',
-  };
-  return statusMap[personastate] || 'unknown';
+export async function POST(request: NextRequest) {
+  return NextResponse.json({
+    message: 'This application now uses client-side IndexedDB storage. Please use the web interface.',
+    deprecated: true,
+    architecture: 'client-side'
+  }, { status: 200 });
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    await initDatabase();
-
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-
-    if (!id) {
-      return Response.json({ error: 'Missing suspect ID' }, { status: 400 });
-    }
-
-    await deleteSuspect(parseInt(id));
-    return Response.json({ success: true });
-  } catch (error) {
-    console.error('Failed to delete suspect:', error);
-    return Response.json(
-      { error: 'Failed to delete suspect' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    message: 'This application now uses client-side IndexedDB storage. Please use the web interface.',
+    deprecated: true,
+    architecture: 'client-side'
+  }, { status: 200 });
 }
 
 export async function PUT(request: NextRequest) {
-  try {
-    await initDatabase();
-
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-
-    if (!id) {
-      return Response.json({ error: 'Missing suspect ID' }, { status: 400 });
-    }
-
-    const body = await request.json();
-    const updatedSuspect = await updateSuspect(parseInt(id), body);
-
-    if (!updatedSuspect) {
-      return Response.json({ error: 'Suspect not found' }, { status: 404 });
-    }
-
-    return Response.json(updatedSuspect);
-  } catch (error) {
-    console.error('Failed to update suspect:', error);
-    return Response.json(
-      { error: 'Failed to update suspect' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    message: 'This application now uses client-side IndexedDB storage. Please use the web interface.',
+    deprecated: true,
+    architecture: 'client-side'
+  }, { status: 200 });
 }
